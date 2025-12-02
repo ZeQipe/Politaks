@@ -68,8 +68,7 @@ try:
 except ImportError:
     pass
 
-print("⚙️  Режим разработки (Development) активирован")
+print("🚀 Django запущен в режиме: development")
 print(f"📊 DEBUG: {DEBUG}")
-print(f"🔑 SECRET_KEY: {'установлен' if SECRET_KEY else 'не установлен'}")
 print(f"🌐 ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 

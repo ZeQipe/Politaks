@@ -12,5 +12,3 @@ if environment == 'production':
 else:
     from .dev import *
 
-print(f"🚀 Django запущен в режиме: {environment}")
-
