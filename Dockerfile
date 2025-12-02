@@ -1,16 +1,19 @@
-FROM python:3.11-slim
+FROM debian:12-slim
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Устанавливаем зависимости системы
+# Устанавливаем Python и зависимости
 RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
     postgresql-client \
     gcc \
     python3-dev \
-    musl-dev \
     libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -s /usr/bin/python3 /usr/bin/python
 
 # Копируем файл зависимостей
 COPY requirements.txt .
