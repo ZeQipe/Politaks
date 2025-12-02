@@ -1,0 +1,118 @@
+"""
+Функции получения данных товаров
+Возвращают данные в едином формате
+"""
+from ..models import Products, Satellite, List
+
+
+def get_related_products_by_domain(product_name: str, domain_title: str = None):
+    """
+    Получение связанных товаров с учетом домена
+    
+    Args:
+        product_name: Название товара
+        domain_title: Название домена (None = базовые ссылки)
+    
+    Returns:
+        dict: {
+            "success": bool,
+            "data": dict или None,
+            "error": str или None
+        }
+    """
+    try:
+        # Шаг 1: Находим основной товар по названию
+        try:
+            product = Products.objects.get(title=product_name)
+        except Products.DoesNotExist:
+            return {
+                "success": False,
+                "data": None,
+                "error": f"Товар '{product_name}' не найден"
+            }
+        
+        # Шаг 2: Определяем домен
+        satellite = None
+        if domain_title:
+            try:
+                satellite = Satellite.objects.get(title=domain_title)
+            except Satellite.DoesNotExist:
+                return {
+                    "success": False,
+                    "data": None,
+                    "error": f"Домен '{domain_title}' не найден"
+                }
+        
+        # Шаг 3: Получаем все связи текущего товара
+        relations = List.objects.filter(product=product).select_related('related_product')
+        
+        # Шаг 4: Фильтруем связанные товары по логике
+        result = {}
+        
+        for relation in relations:
+            related_product = relation.related_product
+            
+            # Фильтрация в зависимости от наличия домена
+            if domain_title is None:
+                # Если домен None - нужны товары с baseLink
+                if not related_product.baseLink:
+                    continue
+                
+                link = related_product.baseLink
+                
+            else:
+                # Если домен есть - проверяем, есть ли у связанного товара этот сателлит
+                if not satellite in related_product.satelitDomens.all():
+                    continue
+                
+                # Проверяем наличие satelitLink
+                if not related_product.satelitLink:
+                    continue
+                
+                # Склеиваем домен + satelitLink
+                link = _join_url(satellite.domen, related_product.satelitLink)
+            
+            # Формируем результат
+            result[related_product.title] = {
+                "link": link,
+                "description": relation.description or ""
+            }
+        
+        # Шаг 5: Формируем итоговый ответ
+        return {
+            "success": True,
+            "data": {
+                product_name: result
+            },
+            "error": None
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "data": None,
+            "error": f"Ошибка при получении данных: {str(e)}"
+        }
+
+
+def _join_url(domain: str, path: str) -> str:
+    """
+    Склеивает домен и путь, убирая дублирующийся слеш
+    
+    Args:
+        domain: Домен (например, "https://example.com/")
+        path: Путь (например, "/product")
+    
+    Returns:
+        str: Склеенный URL
+    """
+    # Убираем дублирующийся слеш
+    if domain.endswith('/') and path.startswith('/'):
+        return domain + path[1:]
+    
+    # Если нет слеша между ними, добавляем
+    if not domain.endswith('/') and not path.startswith('/'):
+        return domain + '/' + path
+    
+    # Иначе просто склеиваем
+    return domain + path

@@ -7,6 +7,7 @@ class Satellite(models.Model):
     """Модель доменов-сателлитов"""
     
     id = models.BigAutoField(primary_key=True, verbose_name='ID')
+    title = models.CharField(max_length=255, verbose_name='Наименование')
     domen = models.CharField(max_length=255, unique=True, verbose_name='Домен')
     createAt = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
     
@@ -17,7 +18,7 @@ class Satellite(models.Model):
         ordering = ['-createAt']
     
     def __str__(self):
-        return self.domen
+        return f"{self.title} ({self.domen})"
 
 
 class Products(models.Model):
