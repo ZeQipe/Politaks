@@ -2,15 +2,10 @@
 Django==5.2.8
 
 # Database
-# Раскомментируйте для PostgreSQL:
-# psycopg2-binary==2.9.9
+psycopg2-binary==2.9.9
 
-# Для работы с .env файлами (опционально)
-# python-decouple==3.8
-
-# ASGI сервер для production
-# gunicorn==21.2.0
-# uvicorn==0.24.0
+# ASGI/WSGI сервер для production
+gunicorn==21.2.0
 
 # Для работы с изображениями
 # Pillow==10.1.0
