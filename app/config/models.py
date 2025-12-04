@@ -26,20 +26,50 @@ class Inputer(models.Model):
     """Модель полей ввода"""
     
     TYPE_CHOICES = [
-        ('input', 'Поле ввода'),
-        ('choise', 'Выбор'),
+        ('single', 'Однострочное поле'),
+        ('multiline', 'Многострочное поле'),
+        ('photo', 'Загрузка фото'),
+        ('select', 'Выбор из списка'),
     ]
     
     SIZE_CHOICES = [
-        ('small', 'Маленький'),
-        ('normal', 'Обычный'),
-        ('high', 'Большой'),
+        ('small', 'Маленький (s)'),
+        ('medium', 'Средний (m)'),
+        ('large', 'Большой (l)'),
+    ]
+    
+    TYPE_SELECT_CHOICES = [
+        ('product', 'Товар'),
     ]
     
     id = models.BigAutoField(primary_key=True, verbose_name='ID')
-    title = models.CharField(max_length=255, verbose_name='Название')
+    name = models.CharField(max_length=255, verbose_name='Внутреннее наименование')
+    label = models.CharField(max_length=255, verbose_name='Отображаемое имя')
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, verbose_name='Тип')
-    size = models.CharField(max_length=20, choices=SIZE_CHOICES, verbose_name='Размер')
+    size = models.CharField(
+        max_length=20, 
+        choices=SIZE_CHOICES, 
+        null=True, 
+        blank=True, 
+        verbose_name='Размер',
+        help_text='Только для multiline'
+    )
+    placement = models.CharField(
+        max_length=255, 
+        null=True, 
+        blank=True, 
+        verbose_name='Подсказка (placeholder)',
+        help_text='Недоступно для photo'
+    )
+    type_select = models.CharField(
+        max_length=50, 
+        choices=TYPE_SELECT_CHOICES, 
+        null=True, 
+        blank=True, 
+        default=None,
+        verbose_name='Тип выбора',
+        help_text='Только для select'
+    )
     createAt = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
     
     class Meta:
@@ -49,7 +79,41 @@ class Inputer(models.Model):
         ordering = ['-createAt']
     
     def __str__(self):
-        return self.title
+        return f"{self.name} ({self.get_type_display()})"
+    
+    def save(self, *args, **kwargs):
+        """Автоматическая установка значений в зависимости от type"""
+        # single: size = None
+        if self.type == 'single':
+            self.size = None
+            self.type_select = None
+        
+        # multiline: size обязателен
+        elif self.type == 'multiline':
+            self.type_select = None
+            if not self.size:
+                self.size = 'medium'
+        
+        # photo: size = None, placement = None
+        elif self.type == 'photo':
+            self.size = None
+            self.placement = None
+            self.type_select = None
+        
+        # select: фиксированные значения
+        elif self.type == 'select':
+            self.size = None
+            self.label = 'Наименование товара'
+            if not self.type_select:
+                self.type_select = 'product'
+        
+        super().save(*args, **kwargs)
+    
+    def get_size_code(self):
+        """Возвращает первый символ размера для фронтенда"""
+        if self.size:
+            return self.size[0]  # s, m, l
+        return None
 
 
 class Assistant(models.Model):
@@ -62,6 +126,7 @@ class Assistant(models.Model):
     temperatures = models.FloatField(null=True, blank=True, verbose_name='Температура')
     input_columns = models.ManyToManyField(
         Inputer,
+        through='AssistantInputer',
         blank=True,
         related_name='assistants',
         verbose_name='Поля ввода'
@@ -76,3 +141,43 @@ class Assistant(models.Model):
     
     def __str__(self):
         return self.title
+
+
+class AssistantInputer(models.Model):
+    """Промежуточная таблица для связи Assistant и Inputer"""
+    
+    REQUIRED_CHOICES = [
+        ('required', 'Обязательное'),
+        ('optional', 'Не обязательное'),
+    ]
+    
+    id = models.BigAutoField(primary_key=True, verbose_name='ID')
+    assistant = models.ForeignKey(
+        Assistant,
+        on_delete=models.CASCADE,
+        related_name='assistant_inputers',
+        verbose_name='Ассистент'
+    )
+    inputer = models.ForeignKey(
+        Inputer,
+        on_delete=models.CASCADE,
+        related_name='inputer_assistants',
+        verbose_name='Поле ввода'
+    )
+    required = models.CharField(
+        max_length=20,
+        choices=REQUIRED_CHOICES,
+        default='required',
+        verbose_name='Обязательность'
+    )
+    createAt = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
+    
+    class Meta:
+        db_table = 'assistant_inputer'
+        verbose_name = 'Связь Ассистент-Инпутер'
+        verbose_name_plural = 'Связи Ассистент-Инпутер'
+        unique_together = ['assistant', 'inputer']
+        ordering = ['id']
+    
+    def __str__(self):
+        return f"{self.assistant.title} - {self.inputer.name} ({self.get_required_display()})"

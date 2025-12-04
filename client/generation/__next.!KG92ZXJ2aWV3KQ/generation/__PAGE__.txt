@@ -1,0 +1,8 @@
+1:"$Sreact.fragment"
+2:I[60678,["/_next/static/chunks/556f1527b4b521a2.js","/_next/static/chunks/f33272734e04cb31.js","/_next/static/chunks/16f175b6fb889812.js","/_next/static/chunks/ee00f0557b7dd2b1.js","/_next/static/chunks/03fbf8a0d303bbcd.js"],"HydrationBoundary"]
+3:I[94102,["/_next/static/chunks/556f1527b4b521a2.js","/_next/static/chunks/f33272734e04cb31.js","/_next/static/chunks/16f175b6fb889812.js","/_next/static/chunks/ee00f0557b7dd2b1.js","/_next/static/chunks/03fbf8a0d303bbcd.js"],"GenerationFormWidget"]
+4:I[70330,["/_next/static/chunks/556f1527b4b521a2.js","/_next/static/chunks/f33272734e04cb31.js","/_next/static/chunks/16f175b6fb889812.js","/_next/static/chunks/ee00f0557b7dd2b1.js","/_next/static/chunks/03fbf8a0d303bbcd.js"],"GenerationResultWidget"]
+5:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/247eb132b7f7b574.js"],"OutletBoundary"]
+6:"$Sreact.suspense"
+0:{"buildId":"Sz-XxqpcR90X-NIRE62oO","rsc":["$","$1","c",{"children":[["$","main",null,{"className":"flex flex-1 gap-[50px] px-12 py-8","children":[["$","$L2",null,{"state":{"mutations":[],"queries":[]},"children":["$","$L3",null,{}]}],["$","$L4",null,{}]]}],[["$","script","script-0",{"src":"/_next/static/chunks/ee00f0557b7dd2b1.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/03fbf8a0d303bbcd.js","async":true}]],["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
+7:null

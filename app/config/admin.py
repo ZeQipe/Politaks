@@ -1,12 +1,11 @@
 from django.contrib import admin
-from .models import Models, Assistant, Inputer
+from .models import Models, Assistant, Inputer, AssistantInputer
 
 
 @admin.register(Models)
 class ModelsAdmin(admin.ModelAdmin):
     """Админ-панель для AI моделей"""
     
-    # Список отображаемых полей
     list_display = (
         'id',
         'name',
@@ -16,23 +15,19 @@ class ModelsAdmin(admin.ModelAdmin):
         'createAt',
     )
     
-    # Поля для фильтрации
     list_filter = (
         'is_active',
         'createAt',
     )
     
-    # Поля для поиска
     search_fields = (
         'name',
         'url',
         'key',
     )
     
-    # Сортировка по умолчанию
     ordering = ('-createAt',)
     
-    # Все поля для редактирования
     fieldsets = (
         ('Основная информация', {
             'fields': ('name', 'url', 'key')
@@ -46,20 +41,12 @@ class ModelsAdmin(admin.ModelAdmin):
         }),
     )
     
-    # Поля только для чтения
     readonly_fields = ('createAt',)
-    
-    # Поля для быстрого редактирования в списке
     list_editable = ('is_active',)
-    
-    # Количество элементов на странице
     list_per_page = 25
-    
-    # Дата иерархия
     date_hierarchy = 'createAt'
     
     def key_preview(self, obj):
-        """Превью ключа (первые 20 символов)"""
         if obj.key:
             return f"{obj.key[:20]}..." if len(obj.key) > 20 else obj.key
         return "-"
@@ -70,38 +57,40 @@ class ModelsAdmin(admin.ModelAdmin):
 class InputerAdmin(admin.ModelAdmin):
     """Админ-панель для полей ввода"""
     
-    # Список отображаемых полей
     list_display = (
         'id',
-        'title',
+        'name',
+        'label',
         'type',
         'size',
+        'placement_preview',
+        'type_select',
         'assistants_count',
         'createAt',
     )
     
-    # Поля для фильтрации
     list_filter = (
         'type',
         'size',
+        'type_select',
         'createAt',
     )
     
-    # Поля для поиска
     search_fields = (
-        'title',
+        'name',
+        'label',
+        'placement',
     )
     
-    # Сортировка по умолчанию
     ordering = ('-createAt',)
     
-    # Все поля для редактирования
     fieldsets = (
         ('Основная информация', {
-            'fields': ('title',)
+            'fields': ('name', 'label', 'type')
         }),
         ('Настройки поля', {
-            'fields': ('type', 'size')
+            'fields': ('size', 'placement', 'type_select'),
+            'description': 'Поля автоматически настраиваются в зависимости от типа'
         }),
         ('Системные данные', {
             'fields': ('createAt',),
@@ -109,37 +98,82 @@ class InputerAdmin(admin.ModelAdmin):
         }),
     )
     
-    # Поля только для чтения
     readonly_fields = ('createAt',)
-    
-    # Поля для быстрого редактирования в списке
-    list_editable = ('type', 'size')
-    
-    # Количество элементов на странице
     list_per_page = 25
-    
-    # Дата иерархия
     date_hierarchy = 'createAt'
     
+    def placement_preview(self, obj):
+        if obj.placement:
+            return f"{obj.placement[:30]}..." if len(obj.placement) > 30 else obj.placement
+        return "-"
+    placement_preview.short_description = "Подсказка"
+    
     def assistants_count(self, obj):
-        """Количество связанных ассистентов"""
         return obj.assistants.count()
     assistants_count.short_description = "Кол-во ассистентов"
 
 
-class InputerInline(admin.TabularInline):
+class AssistantInputerInline(admin.TabularInline):
     """Inline для редактирования связей Inputer в Assistant"""
-    model = Assistant.input_columns.through
+    model = AssistantInputer
     extra = 1
     verbose_name = "Поле ввода"
     verbose_name_plural = "Поля ввода"
+    
+    fields = ('inputer', 'required', 'createAt')
+    readonly_fields = ('createAt',)
+    autocomplete_fields = ['inputer']
+
+
+@admin.register(AssistantInputer)
+class AssistantInputerAdmin(admin.ModelAdmin):
+    """Админ-панель для связей Ассистент-Инпутер"""
+    
+    list_display = (
+        'id',
+        'assistant',
+        'inputer',
+        'required',
+        'createAt',
+    )
+    
+    list_filter = (
+        'required',
+        'assistant',
+        'createAt',
+    )
+    
+    search_fields = (
+        'assistant__title',
+        'inputer__name',
+        'inputer__label',
+    )
+    
+    ordering = ('assistant', 'id')
+    
+    fieldsets = (
+        ('Связь', {
+            'fields': ('assistant', 'inputer')
+        }),
+        ('Настройки', {
+            'fields': ('required',)
+        }),
+        ('Системные данные', {
+            'fields': ('createAt',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ('createAt',)
+    autocomplete_fields = ['assistant', 'inputer']
+    list_per_page = 25
+    list_editable = ('required',)
 
 
 @admin.register(Assistant)
 class AssistantAdmin(admin.ModelAdmin):
     """Админ-панель для ассистентов"""
     
-    # Список отображаемых полей
     list_display = (
         'id',
         'title',
@@ -150,23 +184,19 @@ class AssistantAdmin(admin.ModelAdmin):
         'createAt',
     )
     
-    # Поля для фильтрации
     list_filter = (
         'createAt',
         'maks_token',
         'temperatures',
     )
     
-    # Поля для поиска
     search_fields = (
         'title',
         'instruction',
     )
     
-    # Сортировка по умолчанию
     ordering = ('-createAt',)
     
-    # Все поля для редактирования
     fieldsets = (
         ('Основная информация', {
             'fields': ('title', 'instruction')
@@ -174,38 +204,23 @@ class AssistantAdmin(admin.ModelAdmin):
         ('Параметры AI', {
             'fields': ('maks_token', 'temperatures')
         }),
-        ('Поля ввода', {
-            'fields': ('input_columns',)
-        }),
         ('Системные данные', {
             'fields': ('createAt',),
             'classes': ('collapse',)
         }),
     )
     
-    # Поля только для чтения
     readonly_fields = ('createAt',)
-    
-    # ManyToMany с удобным интерфейсом
-    filter_horizontal = ('input_columns',)
-    
-    # Inline для связанных объектов
-    # inlines = [InputerInline]
-    
-    # Количество элементов на странице
+    inlines = [AssistantInputerInline]
     list_per_page = 25
-    
-    # Дата иерархия
     date_hierarchy = 'createAt'
     
     def instruction_preview(self, obj):
-        """Превью инструкции (первые 50 символов)"""
         if obj.instruction:
             return f"{obj.instruction[:50]}..." if len(obj.instruction) > 50 else obj.instruction
         return "-"
     instruction_preview.short_description = "Инструкция (превью)"
     
     def input_columns_count(self, obj):
-        """Количество полей ввода"""
         return obj.input_columns.count()
     input_columns_count.short_description = "Кол-во полей"
