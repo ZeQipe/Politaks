@@ -12,7 +12,7 @@ def get_product_links(request):
     Получение связанных товаров с ссылками
     
     Входные параметры:
-        - domain_title: str | None (название домена)
+        - domain_url: str | None (URL домена)
         - product_name: str (название товара)
     
     Возвращает:
@@ -22,10 +22,10 @@ def get_product_links(request):
         # Получаем параметры в зависимости от метода запроса
         if request.method == 'POST':
             data = json.loads(request.body)
-            domain_title = data.get('domain_title')
+            domain_url = data.get('domain_url')
             product_name = data.get('product_name')
         else:  # GET
-            domain_title = request.GET.get('domain_title')
+            domain_url = request.GET.get('domain_url')
             product_name = request.GET.get('product_name')
         
         # Валидация обязательных параметров
@@ -38,7 +38,7 @@ def get_product_links(request):
         # Получаем данные через interface
         result = get_related_products_by_domain(
             product_name=product_name,
-            domain_title=domain_title
+            domain_url=domain_url
         )
         
         # Возвращаем результат

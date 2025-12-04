@@ -5,13 +5,13 @@
 from ..models import Products, Satellite, List
 
 
-def get_related_products_by_domain(product_name: str, domain_title: str = None):
+def get_related_products_by_domain(product_name: str, domain_url: str = None):
     """
     Получение связанных товаров с учетом домена
     
     Args:
         product_name: Название товара
-        domain_title: Название домена (None = базовые ссылки)
+        domain_url: URL домена (None = базовые ссылки)
     
     Returns:
         dict: {
@@ -31,16 +31,16 @@ def get_related_products_by_domain(product_name: str, domain_title: str = None):
                 "error": f"Товар '{product_name}' не найден"
             }
         
-        # Шаг 2: Определяем домен
+        # Шаг 2: Определяем домен по URL
         satellite = None
-        if domain_title:
+        if domain_url:
             try:
-                satellite = Satellite.objects.get(title=domain_title)
+                satellite = Satellite.objects.get(domen=domain_url)
             except Satellite.DoesNotExist:
                 return {
                     "success": False,
                     "data": None,
-                    "error": f"Домен '{domain_title}' не найден"
+                    "error": f"Домен '{domain_url}' не найден"
                 }
         
         # Шаг 3: Получаем все связи текущего товара
@@ -53,7 +53,7 @@ def get_related_products_by_domain(product_name: str, domain_title: str = None):
             related_product = relation.related_product
             
             # Фильтрация в зависимости от наличия домена
-            if domain_title is None:
+            if domain_url is None:
                 # Если домен None - нужны товары с baseLink
                 if not related_product.baseLink:
                     continue
