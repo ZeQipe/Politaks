@@ -72,14 +72,27 @@ def generate(request):
     """
     POST /api/generation/generate
     Генерация контента
+    
+    Принимает:
+    - application/json: {"filters": {...}, "fields": [...]}
+    - multipart/form-data: filters[taskId], filters[modelId], filters[domainId], fields[0][name], fields[0][value], photo1, photo2
     """
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'success': False,
-            'error': 'Некорректный JSON'
-        }, status=400)
+    content_type = request.content_type or ''
+    
+    # Определяем тип контента и извлекаем данные
+    if 'multipart/form-data' in content_type:
+        # FormData (для файлов)
+        data, files = _parse_form_data(request)
+    else:
+        # JSON
+        try:
+            data = json.loads(request.body)
+            files = None
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Некорректный JSON'
+            }, status=400)
     
     # Получаем filters
     filters = data.get('filters', {})
@@ -113,7 +126,8 @@ def generate(request):
         model_id=model_id,
         domain_id=domain_id,
         fields=fields,
-        user=user
+        user=user,
+        files=files
     )
     
     if result['success']:
@@ -126,3 +140,68 @@ def generate(request):
             'success': False,
             'error': result['error']
         }, status=400)
+
+
+def _parse_form_data(request) -> tuple[dict, dict]:
+    """
+    Парсит multipart/form-data запрос
+    
+    Формат ожидаемых полей:
+    - filters[taskId]: string
+    - filters[modelId]: string
+    - filters[domainId]: string
+    - fields[0][name]: string
+    - fields[0][value]: string
+    - fields[1][name]: string
+    - fields[1][value]: string
+    - photo1: File
+    - photo2: File
+    
+    Returns:
+        tuple: (data_dict, files_dict)
+    """
+    data = {
+        'filters': {},
+        'fields': []
+    }
+    files = {}
+    
+    # Парсим filters
+    for key in ['taskId', 'modelId', 'domainId']:
+        form_key = f'filters[{key}]'
+        if form_key in request.POST:
+            data['filters'][key] = request.POST[form_key]
+    
+    # Парсим fields (массив объектов)
+    # Собираем все поля вида fields[N][name] и fields[N][value]
+    field_indices = set()
+    for key in request.POST.keys():
+        if key.startswith('fields[') and '][' in key:
+            # Извлекаем индекс: fields[0][name] -> 0
+            try:
+                idx = int(key.split('[')[1].split(']')[0])
+                field_indices.add(idx)
+            except (ValueError, IndexError):
+                continue
+    
+    # Сортируем индексы и собираем поля
+    for idx in sorted(field_indices):
+        name_key = f'fields[{idx}][name]'
+        value_key = f'fields[{idx}][value]'
+        
+        name = request.POST.get(name_key, '')
+        value = request.POST.get(value_key, '')
+        
+        if name:
+            data['fields'].append({
+                'name': name,
+                'value': value
+            })
+    
+    # Парсим файлы
+    for file_key in ['photo1', 'photo2']:
+        if file_key in request.FILES:
+            uploaded_file = request.FILES[file_key]
+            files[file_key] = uploaded_file.read()
+    
+    return data, files if files else None

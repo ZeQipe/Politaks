@@ -247,7 +247,8 @@ def _build_form_field(inputer, is_required: bool, domain_id: str):
     # select - выбор из списка
     elif inputer.type == 'select':
         base_field["labelPlacement"] = "top"
-        base_field["withSearch"] = True
+        base_field["withSearch"] = inputer.select_search  # из модели
+        base_field["multiple"] = inputer.multi_select  # из модели
         base_field["items"] = _get_select_items(inputer.type_select, domain_id)
         return base_field
     
