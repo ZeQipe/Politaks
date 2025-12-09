@@ -1,8 +1,9 @@
 # Тестовые данные для заполнения БД инпутерами
 # Формат: {name: {label, type, size, placement, type_select, select_search, multi_select}}
+# name должен совпадать с ключом API микросервиса
 
 INPUTERS_DATA = {
-    "list_prod_single": {
+    "product_name": {
         "label": "Наименование товара",
         "type": "select",
         "size": None,
@@ -11,7 +12,7 @@ INPUTERS_DATA = {
         "select_search": True,
         "multi_select": False,
     },
-    "seo_vh_m": {
+    "seo_high_freq": {
         "label": "SEO ВЧ:",
         "type": "multiline",
         "size": "medium",
@@ -20,7 +21,7 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "seo_sh_m": {
+    "seo_medium_freq": {
         "label": "SEO СЧ:",
         "type": "multiline",
         "size": "medium",
@@ -29,7 +30,7 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "seo_nh_m": {
+    "seo_low_freq": {
         "label": "SEO НЧ:",
         "type": "multiline",
         "size": "medium",
@@ -38,8 +39,8 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "description_b": {
-        "label": "Описание | Описания:",
+    "description": {
+        "label": "Описание:",
         "type": "multiline",
         "size": "large",
         "placement": "Введите описание...",
@@ -47,8 +48,8 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "application_b": {
-        "label": "Применение | Свойства:",
+    "usage": {
+        "label": "Применение:",
         "type": "multiline",
         "size": "large",
         "placement": "Укажите применение...",
@@ -56,7 +57,16 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "name_object": {
+    "features": {
+        "label": "Свойства:",
+        "type": "multiline",
+        "size": "large",
+        "placement": "Укажите свойства...",
+        "type_select": None,
+        "select_search": False,
+        "multi_select": False,
+    },
+    "place_name": {
         "label": "Название места/объекта:",
         "type": "single",
         "size": None,
@@ -74,7 +84,7 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "more_info": {
+    "background_info": {
         "label": "Дополнительная информация:",
         "type": "multiline",
         "size": "medium",
@@ -83,8 +93,8 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "list_prod_multi": {
-        "label": "Наименование товаров | Использованные товары:",
+    "products_name": {
+        "label": "Использованные товары:",
         "type": "select",
         "size": None,
         "placement": "Выберите товары",
@@ -92,7 +102,16 @@ INPUTERS_DATA = {
         "select_search": True,
         "multi_select": True,
     },
-    "media_1": {
+    "descriptions": {
+        "label": "Описания:",
+        "type": "multiline",
+        "size": "large",
+        "placement": "Введите описания...",
+        "type_select": None,
+        "select_search": False,
+        "multi_select": False,
+    },
+    "photo1": {
         "label": "Фото 1",
         "type": "photo",
         "size": None,
@@ -101,7 +120,7 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "media_2": {
+    "photo2": {
         "label": "Фото 2",
         "type": "photo",
         "size": None,
@@ -110,7 +129,7 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "title_single": {
+    "title": {
         "label": "Заголовок",
         "type": "single",
         "size": None,
@@ -119,25 +138,34 @@ INPUTERS_DATA = {
         "select_search": False,
         "multi_select": False,
     },
-    "article_b": {
-        "label": "Статья | Описание | Инструкция:",
+    "article": {
+        "label": "Статья:",
         "type": "multiline",
         "size": "large",
-        "placement": "Введите статью, описание или инструкцию...",
+        "placement": "Введите статью...",
         "type_select": None,
         "select_search": False,
         "multi_select": False,
     },
-    "seo_tag": {
-        "label": "SEO теги:",
+    "tech_instruction": {
+        "label": "Инструкция:",
         "type": "multiline",
-        "size": "medium",
-        "placement": "Укажите SEO теги...",
+        "size": "large",
+        "placement": "Введите инструкцию...",
         "type_select": None,
         "select_search": False,
         "multi_select": False,
     },
-    "subjects": {
+    "category_description": {
+        "label": "Описание категории:",
+        "type": "multiline",
+        "size": "large",
+        "placement": "Введите описание категории...",
+        "type_select": None,
+        "select_search": False,
+        "multi_select": False,
+    },
+    "topic": {
         "label": "Тематика:",
         "type": "multiline",
         "size": "medium",
@@ -161,71 +189,78 @@ INPUTERS_DATA = {
 # Формат: {key_title: [inputer_name, ...]}
 ASSISTANT_INPUTERS = {
     "sub_description": [
-        "list_prod_single",
-        "seo_vh_m",
-        "seo_sh_m",
-        "seo_nh_m",
-        "description_b",
-        "application_b",
+        "product_name",
+        "seo_high_freq",
+        "seo_medium_freq",
+        "seo_low_freq",
+        "description",
+        "usage",
     ],
     "description": [
-        "list_prod_single",
-        "seo_vh_m",
-        "seo_sh_m",
-        "seo_nh_m",
-        "description_b",
-        "application_b",
+        "product_name",
+        "seo_high_freq",
+        "seo_medium_freq",
+        "seo_low_freq",
+        "description",
+        "usage",
     ],
     "usage": [
-        "list_prod_single",
-        "application_b",
+        "product_name",
+        "usage",
     ],
     "features": [
-        "list_prod_single",
-        "application_b",
+        "product_name",
+        "features",
     ],
     "preview": [
-        "list_prod_single",
-        "seo_vh_m",
-        "seo_sh_m",
-        "seo_nh_m",
-        "description_b",
-        "application_b",
+        "product_name",
+        "seo_high_freq",
+        "seo_medium_freq",
+        "seo_low_freq",
+        "description",
+        "usage",
     ],
     "reviews": [
-        "list_prod_single",
-        "seo_vh_m",
-        "seo_sh_m",
-        "seo_nh_m",
-        "description_b",
-        "application_b",
+        "product_name",
+        "seo_high_freq",
+        "seo_medium_freq",
+        "seo_low_freq",
+        "description",
+        "usage",
     ],
     "work_results": [
-        "name_object",
+        "place_name",
         "location",
-        "more_info",
-        "list_prod_multi",
-        "description_b",
-        "media_1",
-        "media_2",
+        "background_info",
+        "products_name",
+        "descriptions",
+        "photo1",
+        "photo2",
     ],
     "change_article": [
-        "title_single",
-        "article_b",
-        "seo_tag",
+        "title",
+        "article",
+        "seo_high_freq",
+        "seo_medium_freq",
+        "seo_low_freq",
     ],
     "article": [
-        "subjects",
+        "topic",
         "comment",
-        "seo_tag",
+        "seo_high_freq",
+        "seo_medium_freq",
+        "seo_low_freq",
     ],
     "tech_instruction": [
-        "article_b",
-        "seo_tag",
+        "tech_instruction",
+        "seo_high_freq",
+        "seo_medium_freq",
+        "seo_low_freq",
     ],
     "category_description": [
-        "article_b",
-        "seo_tag",
+        "category_description",
+        "seo_high_freq",
+        "seo_medium_freq",
+        "seo_low_freq",
     ],
 }
-

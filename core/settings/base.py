@@ -44,6 +44,9 @@ CORS_ALLOW_CREDENTIALS = True
 # Для разработки разрешаем все origins
 CORS_ALLOW_ALL_ORIGINS = True
 
+# CSRF Settings - разрешённые домены для POST запросов
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000,http://93.183.83.254:8000').split(',')
+
 # URL без обязательного слэша на конце
 APPEND_SLASH = False
 
