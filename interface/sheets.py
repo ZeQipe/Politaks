@@ -10,7 +10,7 @@ class SheetsAPI:
     """Клиент для API сервиса Sheets"""
     
     def __init__(self, base_url: str = None, timeout: float = 600.0):
-        self.base_url = base_url or os.getenv('SHEETS_API_URL', 'http://localhost:8002')
+        self.base_url = base_url or os.getenv('SHEETS_API_URL', 'http://localhost:7998')
         self.timeout = timeout  # Большой таймаут для обработки таблиц
     
     async def _post(self, endpoint: str, payload: dict) -> dict:

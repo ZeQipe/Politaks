@@ -28,8 +28,8 @@ services:
       - logs_volume:/app/logs
     ports:
       - "8000:8000"   # Django
-      - "8001:8001"   # Assistants API
-      - "8002:8002"   # Sheets API
+      - "7999:7999"   # Assistants API
+      - "7998:7998"   # Sheets API
     environment:
       # Django
       - DJANGO_ENV=${DJANGO_ENV:-production}
@@ -47,8 +47,8 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       # Microservices (внутренние URL для Docker)
-      - ASSISTANTS_API_URL=http://localhost:8001
-      - SHEETS_API_URL=http://localhost:8002
+      - ASSISTANTS_API_URL=http://localhost:7999
+      - SHEETS_API_URL=http://localhost:7998
       # OpenAI
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PROXY=${PROXY:-}

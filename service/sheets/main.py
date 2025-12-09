@@ -107,4 +107,4 @@ async def process_google_sheets_endpoint(request: ProcessGoogleSheetsRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("service.sheets.main:app", host="0.0.0.0", port=8002, workers=2)
+    uvicorn.run("service.sheets.main:app", host="0.0.0.0", port=7998, workers=2)

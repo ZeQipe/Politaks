@@ -36,8 +36,8 @@ RUN mkdir -p /app/staticfiles /app/media /app/logs \
 RUN useradd -m -u 1000 django && chown -R django:django /app
 USER django
 
-# Открываем порты: Django (8000), Assistants (8001), Sheets (8002)
-EXPOSE 8000 8001 8002
+# Открываем порты: Django (8000), Assistants (7999), Sheets (7998)
+EXPOSE 8000 7999 7998
 
 # Переменные окружения по умолчанию
 ENV DJANGO_ENV=production

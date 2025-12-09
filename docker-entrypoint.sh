@@ -26,11 +26,11 @@ if [ "$DJANGO_ENV" = "production" ]; then
 fi
 
 # Запускаем микросервисы в фоне
-echo "🚀 Запуск микросервиса Assistants (порт 8001)..."
+echo "🚀 Запуск микросервиса Assistants (порт 7999)..."
 python ./service/assistants/main.py &
 ASSISTANTS_PID=$!
 
-echo "🚀 Запуск микросервиса Sheets (порт 8002)..."
+echo "🚀 Запуск микросервиса Sheets (порт 7998)..."
 python -m service.sheets.main &
 SHEETS_PID=$!
 

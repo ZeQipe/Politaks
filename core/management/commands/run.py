@@ -130,11 +130,11 @@ class Command(BaseCommand):
         sheets_cmd = [python, '-m', 'service.sheets.main']
 
         if use_windows:
-            self._start_in_window('Assistants (8001)', assistants_cmd, env_info)
-            self._start_in_window('Sheets (8002)', sheets_cmd, env_info)
+            self._start_in_window('Assistants (7999)', assistants_cmd, env_info)
+            self._start_in_window('Sheets (7998)', sheets_cmd, env_info)
         else:
             # Docker/CI режим — фоновые процессы
-            self.stdout.write(self.style.WARNING("🚀 Запуск Assistants (порт 8001)..."))
+            self.stdout.write(self.style.WARNING("🚀 Запуск Assistants (порт 7999)..."))
             proc1 = subprocess.Popen(
                 assistants_cmd,
                 cwd=str(self.base_dir),
@@ -143,7 +143,7 @@ class Command(BaseCommand):
             )
             self.processes.append(('Assistants', proc1))
 
-            self.stdout.write(self.style.WARNING("🚀 Запуск Sheets (порт 8002)..."))
+            self.stdout.write(self.style.WARNING("🚀 Запуск Sheets (порт 7998)..."))
             proc2 = subprocess.Popen(
                 sheets_cmd,
                 cwd=str(self.base_dir),

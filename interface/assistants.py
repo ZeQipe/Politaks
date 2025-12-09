@@ -10,7 +10,7 @@ class AssistantsAPI:
     """Клиент для API сервиса Assistants"""
     
     def __init__(self, base_url: str = None, timeout: float = 120.0):
-        self.base_url = base_url or os.getenv('ASSISTANTS_API_URL', 'http://localhost:8001')
+        self.base_url = base_url or os.getenv('ASSISTANTS_API_URL', 'http://localhost:7999')
         self.timeout = timeout
     
     async def _post(self, endpoint: str, payload: dict) -> dict:

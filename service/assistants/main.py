@@ -529,4 +529,4 @@ async def change_category_description_endpoint(request: CategoryDescriptionReque
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, workers=2)
+    uvicorn.run("main:app", host="0.0.0.0", port=7999, workers=2)
