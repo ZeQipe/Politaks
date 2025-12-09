@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     # Third-party
     'corsheaders',
     # Приложения проекта
+    'core',
     'app.users',
     'app.config',
     'app.product',
