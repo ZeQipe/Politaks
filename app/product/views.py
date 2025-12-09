@@ -16,7 +16,7 @@ def get_product_links(request):
     Получение связанных товаров с ссылками
     
     Входные параметры:
-        - domain_url: str | None (URL домена)
+        - domain_url/domain_title: str | None (title или URL домена)
         - product_name: list[str] (список названий товаров)
     
     Возвращает:
@@ -26,10 +26,11 @@ def get_product_links(request):
         # Получаем параметры в зависимости от метода запроса
         if request.method == 'POST':
             data = json.loads(request.body)
-            domain_url = data.get('domain_url')
+            # Принимаем и domain_url, и domain_title
+            domain_url = data.get('domain_url') or data.get('domain_title')
             product_names = data.get('product_name', [])
         else:  # GET
-            domain_url = request.GET.get('domain_url')
+            domain_url = request.GET.get('domain_url') or request.GET.get('domain_title')
             # Для GET запроса product_name может быть передан несколько раз
             product_names = request.GET.getlist('product_name')
         
@@ -75,7 +76,7 @@ def get_product_link(request):
     Получение ссылок на товары
     
     Входные параметры:
-        - domain_url: str | None (URL домена, None или "main" = базовые ссылки)
+        - domain_url/domain_title: str | None (title или URL домена, None/"main" = базовые ссылки)
         - product_name: list[str] (список названий товаров)
     
     Возвращает:
@@ -85,10 +86,11 @@ def get_product_link(request):
         # Получаем параметры в зависимости от метода запроса
         if request.method == 'POST':
             data = json.loads(request.body)
-            domain_url = data.get('domain_url')
+            # Принимаем и domain_url, и domain_title
+            domain_url = data.get('domain_url') or data.get('domain_title')
             product_names = data.get('product_name', [])
         else:  # GET
-            domain_url = request.GET.get('domain_url')
+            domain_url = request.GET.get('domain_url') or request.GET.get('domain_title')
             # Для GET запроса product_name может быть передан несколько раз
             product_names = request.GET.getlist('product_name')
         

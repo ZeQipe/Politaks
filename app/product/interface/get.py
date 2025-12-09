@@ -26,10 +26,13 @@ def get_related_products_by_domain(product_names: list, domain_url: str = None):
         # Определяем сателлит если указан домен (и это не "main")
         satellite = None
         if domain_url and domain_url != "main":
-            # Сначала ищем по title, потом по URL
+            # Сначала ищем по title
             satellite = Satellite.objects.filter(title=domain_url).first()
             if not satellite:
-                satellite = Satellite.objects.filter(domen=domain_url).first()
+                # Ищем по URL (пробуем оба варианта: со слешем и без)
+                domain_with_slash = domain_url.rstrip('/') + '/'
+                domain_without_slash = domain_url.rstrip('/')
+                satellite = Satellite.objects.filter(domen__in=[domain_with_slash, domain_without_slash]).first()
             
             if not satellite:
                 return {
@@ -114,10 +117,13 @@ def get_product_link_by_domain(product_names: list, domain_url: str = None):
         # Определяем сателлит если указан домен
         satellite = None
         if domain_url and domain_url != "main":
-            # Сначала ищем по title, потом по URL
+            # Сначала ищем по title
             satellite = Satellite.objects.filter(title=domain_url).first()
             if not satellite:
-                satellite = Satellite.objects.filter(domen=domain_url).first()
+                # Ищем по URL (пробуем оба варианта: со слешем и без)
+                domain_with_slash = domain_url.rstrip('/') + '/'
+                domain_without_slash = domain_url.rstrip('/')
+                satellite = Satellite.objects.filter(domen__in=[domain_with_slash, domain_without_slash]).first()
             
             if not satellite:
                 return {
