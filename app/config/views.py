@@ -220,8 +220,12 @@ def generate_excel(request):
     
     # Получаем range
     range_data = data.get('range', {})
-    range_from = range_data.get('from', 0)
-    range_to = range_data.get('to', 0)
+    try:
+        range_from = int(range_data.get('from', 0))
+        range_to = int(range_data.get('to', 0))
+    except (ValueError, TypeError):
+        range_from = 0
+        range_to = 0
     
     # Валидация обязательных параметров
     if not task_id:
@@ -242,10 +246,16 @@ def generate_excel(request):
             'error': 'Параметр excelLink обязателен'
         }, status=400)
     
+    # Получаем user_id из авторизованного пользователя
+    user_id = None
+    if hasattr(request, 'user') and request.user.is_authenticated:
+        user_id = request.user.id
+    
     result = generate_excel_content(
         task_id=task_id,
         model_id=model_id,
         excel_link=excel_link,
+        user_id=user_id,
         range_from=range_from,
         range_to=range_to
     )

@@ -34,7 +34,7 @@ async def process_google_sheet(llm_model: str, link: str, assistant: str, sheet_
     # logger.debug(wsh_records)
     header = worksheet.row_values(1)
     result_col_index = header.index("Результат") + 1
-    async_req_num = 50
+    async_req_num = 3
 
     async def handle_row(idx: int, record: dict):
         try:
@@ -43,6 +43,7 @@ async def process_google_sheet(llm_model: str, link: str, assistant: str, sheet_
             async with asyncio.Semaphore(async_req_num):
                 result = await assistant_func[assistant](llm_model, *args)
             worksheet.update_cell(idx, result_col_index, result)
+            await asyncio.sleep(20)
         except Exception as e:
             logger.error(f"process_google_sheet().handle_row() - {assistant} - row {idx} - {e}")
     tasks = [

@@ -28,6 +28,7 @@ class SheetsAPI:
         sheet_id: int = 0,
         from_row: int = 3,
         to_row: int = -1,
+        user_id: Optional[int] = None,
     ) -> dict:
         """
         Обработка одного листа Google таблицы
@@ -50,6 +51,7 @@ class SheetsAPI:
             sheet_id: Индекс листа (0 = первый лист)
             from_row: Начальная строка (минимум 3)
             to_row: Конечная строка (-1 = до конца)
+            user_id: ID пользователя
         
         Returns:
             {"status_code": 200, "detail": "success"}
@@ -61,6 +63,7 @@ class SheetsAPI:
             "sheet_id": sheet_id,
             "from_row": from_row,
             "to_row": to_row,
+            "user_id": user_id,
         }
         return await self._post("/process/google_sheet", payload)
 

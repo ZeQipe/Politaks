@@ -359,7 +359,7 @@ def _strip_html(html: str) -> str:
     return text
 
 
-def generate_excel_content(task_id: str, model_id: str, excel_link: str, range_from: int = 0, range_to: int = 0):
+def generate_excel_content(task_id: str, model_id: str, excel_link: str, user_id: int = None, range_from: int = 0, range_to: int = 0):
     """
     Генерация контента из Excel файла
     
@@ -367,6 +367,7 @@ def generate_excel_content(task_id: str, model_id: str, excel_link: str, range_f
         task_id: ID ассистента (строка)
         model_id: ID модели (строка)
         excel_link: ссылка на Excel/Google Sheets файл
+        user_id: ID пользователя
         range_from: начальная строка (0 = не указано)
         range_to: конечная строка (0 = весь документ)
     
@@ -410,6 +411,8 @@ def generate_excel_content(task_id: str, model_id: str, excel_link: str, range_f
             "llm_model": model.name,
             "link": excel_link,
             "assistant": assistant.key_title,
+            "sheet_id": assistant.default_sheets_id or 0,
+            "user_id": user_id,
         }
         
         # Если range_to > 0, добавляем диапазон
