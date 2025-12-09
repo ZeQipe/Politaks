@@ -290,7 +290,7 @@ async def create_reviews_endpoint(request: ReviewsRequest):
 @app.post(route7:="/api/v1/create/work_results", response_model=WorkResultsResponse)
 async def create_work_results_endpoint(
     llm_model: str = Form(...),
-    domain: str = Form(...),
+    domain: str = Form("main"),
     place_name: str = Form(...),
     location: str = Form(...),
     background_info: str = Form(...),
@@ -300,6 +300,10 @@ async def create_work_results_endpoint(
     photo2: UploadFile|str = File(None),
 ):
     try:
+        # Нормализуем domain
+        if not domain or domain.strip() == "":
+            domain = "main"
+        
         photo1_content = None
         photo2_content = None
         if photo1:

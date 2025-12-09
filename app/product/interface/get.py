@@ -23,9 +23,9 @@ def get_related_products_by_domain(product_names: list, domain_url: str = None):
     try:
         result = {}
         
-        # Определяем сателлит если указан домен
+        # Определяем сателлит если указан домен (и это не "main")
         satellite = None
-        if domain_url:
+        if domain_url and domain_url != "main":
             try:
                 satellite = Satellite.objects.get(domen=domain_url)
             except Satellite.DoesNotExist:
@@ -53,8 +53,8 @@ def get_related_products_by_domain(product_names: list, domain_url: str = None):
                 related_product = relation.related_product
                 
                 # Фильтрация в зависимости от наличия домена
-                if domain_url is None:
-                    # Если домен None - нужны товары с baseLink
+                if domain_url is None or domain_url == "main":
+                    # Если домен None или "main" - нужны товары с baseLink
                     if not related_product.baseLink:
                         continue
                     link = related_product.baseLink
