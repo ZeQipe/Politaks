@@ -17,23 +17,24 @@ def get_product_links(request):
     
     Входные параметры:
         - domain_url: str | None (URL домена)
-        - product_name: str (название товара)
+        - product_name: list[str] (список названий товаров)
     
     Возвращает:
-        JSON с информацией о связанных товарах
+        dict: {название: {связанный_товар: {link, description}}}
     """
     try:
         # Получаем параметры в зависимости от метода запроса
         if request.method == 'POST':
             data = json.loads(request.body)
             domain_url = data.get('domain_url')
-            product_name = data.get('product_name')
+            product_names = data.get('product_name', [])
         else:  # GET
             domain_url = request.GET.get('domain_url')
-            product_name = request.GET.get('product_name')
+            # Для GET запроса product_name может быть передан несколько раз
+            product_names = request.GET.getlist('product_name')
         
         # Валидация обязательных параметров
-        if not product_name:
+        if not product_names:
             return JsonResponse({
                 'success': False,
                 'error': 'Параметр product_name обязателен'
@@ -41,7 +42,7 @@ def get_product_links(request):
         
         # Получаем данные через interface
         result = get_related_products_by_domain(
-            product_name=product_name,
+            product_names=product_names,
             domain_url=domain_url
         )
         
@@ -71,28 +72,28 @@ def get_product_links(request):
 @require_http_methods(["GET", "POST"])
 def get_product_link(request):
     """
-    Получение ссылки на товар
+    Получение ссылок на товары
     
     Входные параметры:
         - domain_url: str | None (URL домена, None или "main" = базовые ссылки)
-        - product_name: str (название товара или "_all" для всех)
+        - product_name: list[str] (список названий товаров)
     
     Возвращает:
-        - Для одного товара: строка ссылки
-        - Для "_all": словарь {название: ссылка}
+        dict: {название: ссылка}
     """
     try:
         # Получаем параметры в зависимости от метода запроса
         if request.method == 'POST':
             data = json.loads(request.body)
             domain_url = data.get('domain_url')
-            product_name = data.get('product_name')
+            product_names = data.get('product_name', [])
         else:  # GET
             domain_url = request.GET.get('domain_url')
-            product_name = request.GET.get('product_name')
+            # Для GET запроса product_name может быть передан несколько раз
+            product_names = request.GET.getlist('product_name')
         
         # Валидация обязательных параметров
-        if not product_name:
+        if not product_names:
             return JsonResponse({
                 'success': False,
                 'error': 'Параметр product_name обязателен'
@@ -100,13 +101,13 @@ def get_product_link(request):
         
         # Получаем данные через interface
         result = get_product_link_by_domain(
-            product_name=product_name,
+            product_names=product_names,
             domain_url=domain_url
         )
         
         # Возвращаем результат
         if result['success']:
-            return JsonResponse({'data': result['data']}, status=200)
+            return JsonResponse(result['data'], status=200)
         else:
             return JsonResponse({
                 'success': False,

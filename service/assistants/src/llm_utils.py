@@ -8,13 +8,12 @@ from openai import AsyncOpenAI
 
 from .llm_instructions import *
 from .models import ReviewsResponse
-from .other_utils import get_product_link, get_related_products
+from .other_utils import get_products_links, get_related_products
 from .settings import LOGS_DIR, OPENAI_API_KEY, PROXY, logger
 
 
 class OpenAIAgent:
     def __init__(self):
-        # PROXY может быть пустой строкой — тогда не используем прокси
         _http_client = httpx.AsyncClient(proxy=PROXY if PROXY else None)
         self.client = AsyncOpenAI(api_key=OPENAI_API_KEY, http_client=_http_client)
 
@@ -53,7 +52,7 @@ class OpenAIAgent:
     async def get_sub_description(self, llm_model: str, domain: str, product_name: str, description: str, usage: str,
         seo_high_freq: str, seo_medium_freq: str, seo_low_freq: str,
     ) -> str:
-        related_products = await get_related_products(domain, product_name)
+        related_products = await get_related_products(domain, [product_name])
         prompt = f"<seo_high_freq>\nВЧ:\n{seo_high_freq}\n</seo_high_freq>"
         prompt = f"{prompt}\n<seo_medium_freq>\nСЧ:\n{seo_medium_freq}\n</seo_medium_freq>"
         prompt = f"{prompt}\n<seo_low_freq>\nНЧ:\n{seo_low_freq}\n</seo_low_freq>"
@@ -73,7 +72,7 @@ class OpenAIAgent:
     async def get_description(self, llm_model: str, domain: str, product_name: str, description: str, usage: str,
         seo_high_freq: str, seo_medium_freq: str, seo_low_freq: str,
     ) -> str:
-        related_products = await get_related_products(domain, product_name)
+        related_products = await get_related_products(domain, [product_name])
         prompt = f"<seo_high_freq>\nВЧ:\n{seo_high_freq}\n</seo_high_freq>"
         prompt = f"{prompt}\n<seo_medium_freq>\nСЧ:\n{seo_medium_freq}\n</seo_medium_freq>"
         prompt = f"{prompt}\n<seo_low_freq>\nНЧ:\n{seo_low_freq}\n</seo_low_freq>"
@@ -101,7 +100,7 @@ class OpenAIAgent:
 
 
     async def get_usage(self, llm_model: str, domain: str, product_name: str, usage: str) -> str:
-        # related_products = await get_related_products(domain, product_name)
+        # related_products = await get_related_products(domain, [product_name])
         prompt = f"<usage>\nПрименение:\n{usage}\n</usage>"
         # if related_products:
         #     prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}</related_products>"
@@ -113,7 +112,7 @@ class OpenAIAgent:
 
 
     async def get_features(self, llm_model: str, domain: str, product_name: str, features: str) -> str:
-        # related_products = await get_related_products(domain, product_name)
+        # related_products = await get_related_products(domain, [product_name])
         prompt = f"<features>\nСвойства:\n{features}\n</features>"
         # if related_products:
         #     prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}</related_products>"
@@ -127,7 +126,7 @@ class OpenAIAgent:
     async def get_preview(self, llm_model: str, domain: str, product_name: str, description: str, usage: str,
         seo_high_freq: str, seo_medium_freq: str, seo_low_freq: str,
     ) -> str:
-        related_products = await get_related_products(domain, product_name)
+        related_products = await get_related_products(domain, [product_name])
         prompt = f"<seo_high_freq>\nВЧ:\n{seo_high_freq}\n</seo_high_freq>"
         prompt = f"{prompt}\n<seo_medium_freq>\nСЧ:\n{seo_medium_freq}\n</seo_medium_freq>"
         prompt = f"{prompt}\n<seo_low_freq>\nНЧ:\n{seo_low_freq}\n</seo_low_freq>"
@@ -166,7 +165,7 @@ class OpenAIAgent:
         products_name: str, descriptions: str,
         photo1: bytes, photo2: bytes,
     ) -> str:
-        products_links = {name.strip(): await get_product_link(domain, name.strip()) for name in products_name.split(",")}
+        products_links = await get_products_links(domain, [name.strip() for name in products_name.split(",")])
         prompt = f"<place_name>\nНазвание места/объекта:\n{place_name}\n</place_name>"
         prompt = f"{prompt}\n\n<location>\nРасположение:\n{location}\n</location>"
         prompt = f"{prompt}\n\n<background_info>\nДополнительная информация:\n{background_info}\n</background_info>"
@@ -238,7 +237,7 @@ class OpenAIAgent:
     async def change_tech_instruction(self, llm_model: str, domain: str, tech_instruction: str,
         seo_high_freq: str, seo_medium_freq: str, seo_low_freq: str,
     ) -> str:
-        products_links = await get_product_link(domain, "_all")
+        products_links = await get_products_links(domain, ["_all"])
         prompt = f"<seo_high_freq>\nВЧ:\n{seo_high_freq}\n</seo_high_freq>"
         prompt = f"{prompt}\n<seo_medium_freq>\nСЧ:\n{seo_medium_freq}\n</seo_medium_freq>"
         prompt = f"{prompt}\n<seo_low_freq>\nНЧ:\n{seo_low_freq}\n</seo_low_freq>"
@@ -254,7 +253,7 @@ class OpenAIAgent:
     async def change_category_description(self, llm_model: str, domain: str, category_description: str,
         seo_high_freq: str, seo_medium_freq: str, seo_low_freq: str,
     ) -> str:
-        products_links = await get_product_link(domain, "_all")
+        products_links = await get_products_links(domain, ["_all"])
         prompt = f"<seo_high_freq>\nВЧ:\n{seo_high_freq}\n</seo_high_freq>"
         prompt = f"{prompt}\n<seo_medium_freq>\nСЧ:\n{seo_medium_freq}\n</seo_medium_freq>"
         prompt = f"{prompt}\n<seo_low_freq>\nНЧ:\n{seo_low_freq}\n</seo_low_freq>"

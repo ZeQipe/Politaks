@@ -10,7 +10,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # API
-    path('api/product/', include('app.product.urls')),
+    path('api/products/', include('app.product.urls')),
     path('api/', include('app.config.urls')),
     
     # Next.js static files (_next/)

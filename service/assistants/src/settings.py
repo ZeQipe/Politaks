@@ -6,12 +6,11 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Корень проекта (4 уровня вверх от settings.py)
+load_dotenv()
+
+
 ROOTDIR = Path(__file__).parent.parent.parent.parent
 SERVICE_DIR = Path(__file__).parent.parent
-
-# Загружаем .env из корня проекта
-load_dotenv(ROOTDIR / '.env')
 
 LOGS_DIR = SERVICE_DIR / "data/logs/"
 os.makedirs(LOGS_DIR, exist_ok=True)
