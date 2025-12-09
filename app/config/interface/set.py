@@ -105,6 +105,10 @@ def generate_content(task_id: str, model_id: str, domain_id: str, fields: list, 
             }
         
         # Вызываем API ассистента
+        print(f"=== PAYLOAD для {assistant.key_title} ===")
+        print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+        print("=" * 50)
+        
         api = AssistantsAPI()
         method = getattr(api, method_name)
         

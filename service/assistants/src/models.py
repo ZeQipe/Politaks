@@ -23,7 +23,7 @@ class DescriptionRequest(BaseModel):
     domain: str
     product_name: str
     description: str
-    usage: str = None
+    usage: str | None = None
     seo_high_freq: str = ""
     seo_medium_freq: str = ""
     seo_low_freq: str = ""
@@ -35,7 +35,7 @@ class DescriptionResponse(BaseModel):
 # "/api/v1/change/usage"
 class UsageRequest(BaseModel):
     llm_model: str
-    domain: str = None
+    domain: str | None = None
     product_name: str | None = None
     usage: str
 
@@ -46,7 +46,7 @@ class UsageResponse(BaseModel):
 # "/api/v1/change/features"
 class FeaturesRequest(BaseModel):
     llm_model: str
-    domain: str = None
+    domain: str | None = None
     product_name: str | None = None
     features: str
 
@@ -60,7 +60,7 @@ class PreviewsRequest(BaseModel):
     domain: str
     product_name: str
     description: str
-    usage: str = None
+    usage: str | None = None
     seo_high_freq: str = ""
     seo_medium_freq: str = ""
     seo_low_freq: str = ""
@@ -74,7 +74,7 @@ class ReviewsRequest(BaseModel):
     llm_model: str
     product_name: str
     description: str
-    usage: str = None
+    usage: str | None = None
     seo_high_freq: str = ""
     seo_medium_freq: str = ""
     seo_low_freq: str = ""
