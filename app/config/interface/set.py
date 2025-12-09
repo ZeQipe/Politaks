@@ -357,3 +357,99 @@ def _strip_html(html: str) -> str:
     # Убираем лишние пробелы и переносы
     text = ' '.join(text.split())
     return text
+
+
+def generate_excel_content(task_id: str, model_id: str, excel_link: str, range_from: int = 0, range_to: int = 0):
+    """
+    Генерация контента из Excel файла
+    
+    Args:
+        task_id: ID ассистента (строка)
+        model_id: ID модели (строка)
+        excel_link: ссылка на Excel/Google Sheets файл
+        range_from: начальная строка (0 = не указано)
+        range_to: конечная строка (0 = весь документ)
+    
+    Returns:
+        dict: {"success": bool, "data": dict, "error": str}
+    """
+    import threading
+    from interface import SheetsAPI
+    
+    try:
+        # Валидация ассистента по ID
+        try:
+            assistant = Assistant.objects.get(id=task_id)
+        except Assistant.DoesNotExist:
+            return {
+                "success": False,
+                "data": None,
+                "error": f"Ассистент с ID '{task_id}' не найден"
+            }
+        
+        # Валидация модели
+        try:
+            model = Models.objects.get(id=model_id)
+        except Models.DoesNotExist:
+            return {
+                "success": False,
+                "data": None,
+                "error": f"Модель с ID '{model_id}' не найдена"
+            }
+        
+        # Проверяем, есть ли ассистент в маппинге
+        if assistant.key_title not in ASSISTANT_METHODS:
+            return {
+                "success": False,
+                "data": None,
+                "error": f"Неизвестный тип ассистента: '{assistant.key_title}'"
+            }
+        
+        # Формируем payload для Sheets API
+        payload = {
+            "llm_model": model.name,
+            "link": excel_link,
+            "assistant": assistant.key_title,
+        }
+        
+        # Если range_to > 0, добавляем диапазон
+        if range_to > 0:
+            payload["from_row"] = range_from
+            payload["to_row"] = range_to
+        
+        print(f"=== SHEETS PAYLOAD для {assistant.key_title} ===")
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        print("=" * 50)
+        
+        # Функция для запуска в отдельном потоке
+        def run_sheets_processing():
+            api = SheetsAPI()
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                loop.run_until_complete(api.process_sheet(**payload))
+                print(f"=== SHEETS PROCESSING COMPLETED для {assistant.key_title} ===")
+            except Exception as e:
+                print(f"=== SHEETS PROCESSING ERROR для {assistant.key_title}: {e} ===")
+            finally:
+                loop.close()
+        
+        # Запускаем обработку в отдельном потоке (не ждём завершения)
+        thread = threading.Thread(target=run_sheets_processing, daemon=True)
+        thread.start()
+        
+        return {
+            "success": True,
+            "data": {
+                "html": "Обработка запущена в фоновом режиме",
+                "text": "Обработка запущена в фоновом режиме"
+            },
+            "error": None
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "data": None,
+            "error": f"Ошибка при запуске генерации из Excel: {str(e)}"
+        }

@@ -2,8 +2,8 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from .interface.get import get_filters_for_generation, get_filters_for_history, get_form_config
-from .interface.set import generate_content
+from .interface.get import get_filters_for_generation, get_filters_for_history, get_form_config, get_history
+from .interface.set import generate_content, generate_excel_content
 
 
 @require_http_methods(["GET"])
@@ -37,6 +37,52 @@ def history_filters(request):
         return JsonResponse({
             'success': False,
             'error': result['error']
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def history(request):
+    """
+    GET /api/history?count=10&offset=0&taskId=...&modelId=...&domainId=...
+    Получение истории генераций
+    """
+    # Получаем параметры
+    count = request.GET.get('count', '10')
+    offset = request.GET.get('offset', '0')
+    task_id = request.GET.get('taskId')
+    model_id = request.GET.get('modelId')
+    domain_id = request.GET.get('domainId')
+    
+    # Преобразуем count и offset в int
+    try:
+        count = int(count)
+        offset = int(offset)
+    except ValueError:
+        return JsonResponse({
+            'status': 'error',
+            'data': [],
+            'count': 0
+        }, status=400)
+    
+    result = get_history(
+        count=count,
+        offset=offset,
+        task_id=task_id,
+        model_id=model_id,
+        domain_id=domain_id
+    )
+    
+    if result['success']:
+        return JsonResponse({
+            'status': 'success',
+            'data': result['data'],
+            'count': result['count']
+        }, status=200)
+    else:
+        return JsonResponse({
+            'status': 'error',
+            'data': [],
+            'count': 0
         }, status=500)
 
 
@@ -128,6 +174,80 @@ def generate(request):
         fields=fields,
         user=user,
         files=files
+    )
+    
+    if result['success']:
+        return JsonResponse({
+            'success': True,
+            'data': result['data']
+        }, status=200)
+    else:
+        return JsonResponse({
+            'success': False,
+            'error': result['error']
+        }, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def generate_excel(request):
+    """
+    POST /api/generation/generate-excel
+    Генерация контента из Excel файла
+    
+    Принимает JSON:
+    {
+        "filters": {"taskId": "...", "modelId": "..."},
+        "excelLink": "https://...",
+        "range": {"from": 0, "to": 0}
+    }
+    """
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Некорректный JSON'
+        }, status=400)
+    
+    # Получаем filters
+    filters = data.get('filters', {})
+    task_id = filters.get('taskId')
+    model_id = filters.get('modelId')
+    
+    # Получаем excel link
+    excel_link = data.get('excelLink')
+    
+    # Получаем range
+    range_data = data.get('range', {})
+    range_from = range_data.get('from', 0)
+    range_to = range_data.get('to', 0)
+    
+    # Валидация обязательных параметров
+    if not task_id:
+        return JsonResponse({
+            'success': False,
+            'error': 'Параметр filters.taskId обязателен'
+        }, status=400)
+    
+    if not model_id:
+        return JsonResponse({
+            'success': False,
+            'error': 'Параметр filters.modelId обязателен'
+        }, status=400)
+    
+    if not excel_link:
+        return JsonResponse({
+            'success': False,
+            'error': 'Параметр excelLink обязателен'
+        }, status=400)
+    
+    result = generate_excel_content(
+        task_id=task_id,
+        model_id=model_id,
+        excel_link=excel_link,
+        range_from=range_from,
+        range_to=range_to
     )
     
     if result['success']:

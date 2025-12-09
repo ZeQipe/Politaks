@@ -287,3 +287,119 @@ def _get_select_items(type_select: str, domain_id: str):
             })
     
     return items
+
+
+def get_history(count: int = 10, offset: int = 0, task_id: str = None, model_id: str = None, domain_id: str = None):
+    """
+    Получение истории генераций
+    
+    Args:
+        count: количество записей
+        offset: смещение для пагинации
+        task_id: ID ассистента (опционально)
+        model_id: ID модели (опционально)
+        domain_id: ID домена (опционально, 'main' или ID Satellite)
+    
+    Returns:
+        dict: {"success": bool, "data": list, "count": int, "error": str}
+    """
+    try:
+        from ..models import Inputer
+        
+        queryset = Response.objects.all().order_by('-createAt')
+        
+        # Фильтрация по task (Assistant)
+        if task_id:
+            try:
+                assistant = Assistant.objects.get(id=task_id)
+                queryset = queryset.filter(assistant=assistant.title)
+            except Assistant.DoesNotExist:
+                pass
+        
+        # Фильтрация по model
+        if model_id:
+            try:
+                model = Models.objects.get(id=model_id)
+                queryset = queryset.filter(model=model.name)
+            except Models.DoesNotExist:
+                pass
+        
+        # Фильтрация по domain
+        if domain_id:
+            if domain_id == 'main':
+                queryset = queryset.filter(domen='main')
+            else:
+                try:
+                    satellite = Satellite.objects.get(id=domain_id)
+                    queryset = queryset.filter(domen=satellite.domen)
+                except Satellite.DoesNotExist:
+                    pass
+        
+        # Общее количество записей (до пагинации)
+        total_count = queryset.count()
+        
+        # Применяем пагинацию
+        queryset = queryset[offset:offset + count]
+        
+        # Кэш для Inputer labels
+        inputer_labels = {inp.name: inp.label for inp in Inputer.objects.all()}
+        
+        # Формируем ответ
+        data = []
+        for response in queryset:
+            # Парсим details из parametrs
+            details = []
+            try:
+                params = json.loads(response.parametrs)
+                if isinstance(params, list):
+                    for param in params:
+                        name = param.get('name', '')
+                        value = param.get('value', '')
+                        # Получаем label из Inputer или используем name
+                        label = inputer_labels.get(name, name)
+                        # Преобразуем value в строку если это список
+                        if isinstance(value, list):
+                            value = ', '.join(str(v) for v in value)
+                        details.append({
+                            "label": label,
+                            "content": str(value)
+                        })
+            except (json.JSONDecodeError, TypeError):
+                pass
+            
+            # Определяем отображаемый домен
+            domain_display = response.domen
+            if response.domen == 'main':
+                domain_display = 'Основной'
+            else:
+                # Пытаемся найти title сателлита
+                try:
+                    sat = Satellite.objects.get(domen=response.domen)
+                    domain_display = sat.title
+                except Satellite.DoesNotExist:
+                    pass
+            
+            data.append({
+                "id": str(response.id),
+                "date": int(response.createAt.timestamp()),
+                "task": response.assistant,
+                "domain": domain_display,
+                "model": response.model,
+                "details": details,
+                "result": response.html
+            })
+        
+        return {
+            "success": True,
+            "data": data,
+            "count": total_count,
+            "error": None
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "data": None,
+            "count": 0,
+            "error": f"Ошибка при получении истории: {str(e)}"
+        }
