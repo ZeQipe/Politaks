@@ -10,7 +10,7 @@ class ModelsAdmin(admin.ModelAdmin):
         'id',
         'name',
         'url',
-        'key_preview',
+        'has_key',
         'is_active',
         'createAt',
     )
@@ -23,14 +23,13 @@ class ModelsAdmin(admin.ModelAdmin):
     search_fields = (
         'name',
         'url',
-        'key',
     )
     
     ordering = ('-createAt',)
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('name', 'url', 'key')
+            'fields': ('name', 'url', 'encrypted_key')
         }),
         ('Настройки', {
             'fields': ('is_active',)
@@ -46,11 +45,10 @@ class ModelsAdmin(admin.ModelAdmin):
     list_per_page = 25
     date_hierarchy = 'createAt'
     
-    def key_preview(self, obj):
-        if obj.key:
-            return f"{obj.key[:20]}..." if len(obj.key) > 20 else obj.key
-        return "-"
-    key_preview.short_description = "Ключ (превью)"
+    def has_key(self, obj):
+        return bool(obj.encrypted_key)
+    has_key.short_description = "Ключ"
+    has_key.boolean = True
 
 
 @admin.register(Inputer)
@@ -65,6 +63,8 @@ class InputerAdmin(admin.ModelAdmin):
         'size',
         'placement_preview',
         'type_select',
+        'select_search',
+        'multi_select',
         'assistants_count',
         'createAt',
     )
@@ -89,7 +89,7 @@ class InputerAdmin(admin.ModelAdmin):
             'fields': ('name', 'label', 'type')
         }),
         ('Настройки поля', {
-            'fields': ('size', 'placement', 'type_select'),
+            'fields': ('size', 'placement', 'type_select', 'select_search', 'multi_select'),
             'description': 'Поля автоматически настраиваются в зависимости от типа'
         }),
         ('Системные данные', {
@@ -120,7 +120,7 @@ class AssistantInputerInline(admin.TabularInline):
     verbose_name = "Поле ввода"
     verbose_name_plural = "Поля ввода"
     
-    fields = ('inputer', 'required', 'createAt')
+    fields = ('inputer', 'order', 'required', 'createAt')
     readonly_fields = ('createAt',)
     autocomplete_fields = ['inputer']
 
@@ -133,6 +133,7 @@ class AssistantInputerAdmin(admin.ModelAdmin):
         'id',
         'assistant',
         'inputer',
+        'order',
         'required',
         'createAt',
     )
@@ -149,14 +150,14 @@ class AssistantInputerAdmin(admin.ModelAdmin):
         'inputer__label',
     )
     
-    ordering = ('assistant', 'id')
+    ordering = ('assistant', 'order', 'id')
     
     fieldsets = (
         ('Связь', {
             'fields': ('assistant', 'inputer')
         }),
         ('Настройки', {
-            'fields': ('required',)
+            'fields': ('order', 'required')
         }),
         ('Системные данные', {
             'fields': ('createAt',),
@@ -176,6 +177,7 @@ class AssistantAdmin(admin.ModelAdmin):
     
     list_display = (
         'id',
+        'key_title',
         'title',
         'instruction_preview',
         'maks_token',
@@ -191,6 +193,7 @@ class AssistantAdmin(admin.ModelAdmin):
     )
     
     search_fields = (
+        'key_title',
         'title',
         'instruction',
     )
@@ -199,10 +202,13 @@ class AssistantAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('title', 'instruction')
+            'fields': ('key_title', 'title', 'instruction')
         }),
         ('Параметры AI', {
             'fields': ('maks_token', 'temperatures')
+        }),
+        ('Настройки', {
+            'fields': ('default_sheets_id',)
         }),
         ('Системные данные', {
             'fields': ('createAt',),

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django import forms
-from .models import User
+from .models import User, UserAssistant
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -19,6 +19,18 @@ class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = User
         fields = '__all__'
+
+
+class UserAssistantInline(admin.TabularInline):
+    """Inline для редактирования связей User-Assistant"""
+    model = UserAssistant
+    extra = 1
+    verbose_name = "Ассистент"
+    verbose_name_plural = "Ассистенты"
+    
+    fields = ('assistant', 'sheets_id', 'createAt')
+    readonly_fields = ('createAt',)
+    autocomplete_fields = ['assistant']
 
 
 @admin.register(User)
@@ -69,6 +81,9 @@ class UserAdmin(BaseUserAdmin):
         ('Права доступа', {
             'fields': ('role', 'is_active', 'is_superuser', 'groups', 'user_permissions')
         }),
+        ('Настройки', {
+            'fields': ('default_excel_url',)
+        }),
         ('Важные даты', {
             'fields': ('createAt', 'last_login')
         }),
@@ -82,7 +97,7 @@ class UserAdmin(BaseUserAdmin):
         }),
         ('Дополнительные настройки', {
             'classes': ('collapse',),
-            'fields': ('is_active', 'is_superuser'),
+            'fields': ('is_active', 'is_superuser', 'default_excel_url'),
         }),
     )
     
@@ -100,3 +115,51 @@ class UserAdmin(BaseUserAdmin):
     
     # Включаем фильтр по связанным полям
     filter_horizontal = ('groups', 'user_permissions')
+    
+    # Inline для ассистентов пользователя
+    inlines = [UserAssistantInline]
+
+
+@admin.register(UserAssistant)
+class UserAssistantAdmin(admin.ModelAdmin):
+    """Админ-панель для связей Пользователь-Ассистент"""
+    
+    list_display = (
+        'id',
+        'user',
+        'assistant',
+        'sheets_id',
+        'createAt',
+    )
+    
+    list_filter = (
+        'user',
+        'assistant',
+        'createAt',
+    )
+    
+    search_fields = (
+        'user__login',
+        'user__firstName',
+        'user__lastName',
+        'assistant__title',
+    )
+    
+    ordering = ('user', 'id')
+    
+    fieldsets = (
+        ('Связь', {
+            'fields': ('user', 'assistant')
+        }),
+        ('Настройки', {
+            'fields': ('sheets_id',)
+        }),
+        ('Системные данные', {
+            'fields': ('createAt',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ('createAt',)
+    autocomplete_fields = ['user', 'assistant']
+    list_per_page = 25
