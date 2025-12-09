@@ -11,7 +11,7 @@ def get_related_products_by_domain(product_names: list, domain_url: str = None):
     
     Args:
         product_names: Список названий товаров
-        domain_url: URL домена (None = базовые ссылки)
+        domain_url: title или URL домена (None/"main" = базовые ссылки)
     
     Returns:
         dict: {
@@ -26,9 +26,12 @@ def get_related_products_by_domain(product_names: list, domain_url: str = None):
         # Определяем сателлит если указан домен (и это не "main")
         satellite = None
         if domain_url and domain_url != "main":
-            try:
-                satellite = Satellite.objects.get(domen=domain_url)
-            except Satellite.DoesNotExist:
+            # Сначала ищем по title, потом по URL
+            satellite = Satellite.objects.filter(title=domain_url).first()
+            if not satellite:
+                satellite = Satellite.objects.filter(domen=domain_url).first()
+            
+            if not satellite:
                 return {
                     "success": False,
                     "data": None,
@@ -96,7 +99,7 @@ def get_product_link_by_domain(product_names: list, domain_url: str = None):
     
     Args:
         product_names: Список названий товаров или ["_all"] для всех
-        domain_url: URL домена (None = базовые ссылки)
+        domain_url: title или URL домена (None/"main" = базовые ссылки)
     
     Returns:
         dict: {
@@ -111,9 +114,12 @@ def get_product_link_by_domain(product_names: list, domain_url: str = None):
         # Определяем сателлит если указан домен
         satellite = None
         if domain_url and domain_url != "main":
-            try:
-                satellite = Satellite.objects.get(domen=domain_url)
-            except Satellite.DoesNotExist:
+            # Сначала ищем по title, потом по URL
+            satellite = Satellite.objects.filter(title=domain_url).first()
+            if not satellite:
+                satellite = Satellite.objects.filter(domen=domain_url).first()
+            
+            if not satellite:
                 return {
                     "success": False,
                     "data": None,

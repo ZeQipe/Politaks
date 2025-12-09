@@ -63,7 +63,7 @@ class OpenAIAgent:
             prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}</related_products>"
 
         temp_response = await self.get_llm_answer(subdescription_instruction, prompt, model=llm_model)
-        response_output = await self.negative_prompt(llm_model, temp_response)
+        response_output = await self.negative_prompt(llm_model, temp_response.output_text)
 
         await self.log_to_file("get_sub_description_log", temp_response)
 
@@ -84,7 +84,7 @@ class OpenAIAgent:
             prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}</related_products>"
 
         temp_response = await self.get_llm_answer(description_instruction, prompt, model=llm_model)
-        response_output = await self.negative_prompt(llm_model, temp_response)
+        response_output = await self.negative_prompt(llm_model, temp_response.output_text)
 
         await self.log_to_file("get_description_log", temp_response)
 
