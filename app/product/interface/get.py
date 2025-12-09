@@ -95,6 +95,127 @@ def get_related_products_by_domain(product_name: str, domain_url: str = None):
         }
 
 
+def get_product_link_by_domain(product_name: str, domain_url: str = None):
+    """
+    Получение ссылки на товар с учетом домена
+    
+    Args:
+        product_name: Название товара или "_all" для всех товаров
+        domain_url: URL домена (None = базовые ссылки)
+    
+    Returns:
+        dict: {
+            "success": bool,
+            "data": str или dict,
+            "error": str или None
+        }
+    """
+    try:
+        # Если запрашиваются все товары
+        if product_name == "_all":
+            return _get_all_product_links(domain_url)
+        
+        # Шаг 1: Находим товар по названию
+        try:
+            product = Products.objects.get(title=product_name)
+        except Products.DoesNotExist:
+            return {
+                "success": False,
+                "data": None,
+                "error": f"Товар '{product_name}' не найден"
+            }
+        
+        # Шаг 2: Определяем ссылку в зависимости от домена
+        if domain_url is None or domain_url == "main":
+            # Базовая ссылка
+            link = product.baseLink or ""
+        else:
+            # Ссылка для сателлита
+            try:
+                satellite = Satellite.objects.get(domen=domain_url)
+            except Satellite.DoesNotExist:
+                return {
+                    "success": False,
+                    "data": None,
+                    "error": f"Домен '{domain_url}' не найден"
+                }
+            
+            # Проверяем, есть ли товар на этом сателлите
+            if satellite not in product.satelitDomens.all():
+                return {
+                    "success": True,
+                    "data": "",
+                    "error": None
+                }
+            
+            # Склеиваем домен + satelitLink
+            if product.satelitLink:
+                link = _join_url(satellite.domen, product.satelitLink)
+            else:
+                link = ""
+        
+        return {
+            "success": True,
+            "data": link,
+            "error": None
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "data": None,
+            "error": f"Ошибка при получении ссылки: {str(e)}"
+        }
+
+
+def _get_all_product_links(domain_url: str = None):
+    """
+    Получение всех ссылок на товары
+    
+    Args:
+        domain_url: URL домена (None = базовые ссылки)
+    
+    Returns:
+        dict: {"success": bool, "data": dict, "error": str}
+    """
+    try:
+        result = {}
+        
+        if domain_url is None or domain_url == "main":
+            # Базовые ссылки - все товары с baseLink
+            products = Products.objects.filter(baseLink__isnull=False).exclude(baseLink='')
+            for product in products:
+                result[product.title] = product.baseLink
+        else:
+            # Ссылки для сателлита
+            try:
+                satellite = Satellite.objects.get(domen=domain_url)
+            except Satellite.DoesNotExist:
+                return {
+                    "success": False,
+                    "data": None,
+                    "error": f"Домен '{domain_url}' не найден"
+                }
+            
+            # Товары этого сателлита с satelitLink
+            products = satellite.products.filter(satelitLink__isnull=False).exclude(satelitLink='')
+            for product in products:
+                result[product.title] = _join_url(satellite.domen, product.satelitLink)
+        
+        return {
+            "success": True,
+            "data": result,
+            "error": None
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "data": None,
+            "error": f"Ошибка при получении ссылок: {str(e)}"
+        }
+
+
 def _join_url(domain: str, path: str) -> str:
     """
     Склеивает домен и путь, убирая дублирующийся слеш

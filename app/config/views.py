@@ -151,11 +151,15 @@ def _parse_form_data(request) -> tuple[dict, dict]:
     - filters[modelId]: string
     - filters[domainId]: string
     - fields[0][name]: string
-    - fields[0][value]: string
+    - fields[0][value]: string | JSON-массив (для multiple select)
     - fields[1][name]: string
-    - fields[1][value]: string
+    - fields[1][value]: string | JSON-массив
     - photo1: File
     - photo2: File
+    
+    Примечание:
+        Если value является JSON-строкой с массивом (например '["val1", "val2"]'),
+        он автоматически парсится в list.
     
     Returns:
         tuple: (data_dict, files_dict)
@@ -191,6 +195,15 @@ def _parse_form_data(request) -> tuple[dict, dict]:
         
         name = request.POST.get(name_key, '')
         value = request.POST.get(value_key, '')
+        
+        # Проверяем, является ли value JSON-строкой с массивом (для multiple select)
+        if value and value.startswith('[') and value.endswith(']'):
+            try:
+                parsed_value = json.loads(value)
+                if isinstance(parsed_value, list):
+                    value = parsed_value
+            except json.JSONDecodeError:
+                pass  # Оставляем как строку
         
         if name:
             data['fields'].append({

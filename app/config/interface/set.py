@@ -31,8 +31,8 @@ def generate_content(task_id: str, model_id: str, domain_id: str, fields: list, 
     Генерация контента
     
     Args:
-        task_id: ID ассистента
-        model_id: ID модели
+        task_id: key_title ассистента
+        model_id: ID модели (строка)
         domain_id: ID домена ('main' или ID Satellite)
         fields: массив полей [{name: str, value: str}]
         user: имя пользователя
@@ -42,14 +42,14 @@ def generate_content(task_id: str, model_id: str, domain_id: str, fields: list, 
         dict: {"success": bool, "data": dict, "error": str}
     """
     try:
-        # Валидация ассистента
+        # Валидация ассистента (task_id = key_title)
         try:
-            assistant = Assistant.objects.get(id=task_id)
+            assistant = Assistant.objects.get(key_title=task_id)
         except Assistant.DoesNotExist:
             return {
                 "success": False,
                 "data": None,
-                "error": f"Ассистент с ID '{task_id}' не найден"
+                "error": f"Ассистент с ключом '{task_id}' не найден"
             }
         
         # Валидация модели
@@ -240,13 +240,18 @@ def _build_payload(assistant_key: str, llm_model: str, domain: str, fields_dict:
     
     elif assistant_key == "work_results":
         # create_work_results(llm_model, domain, place_name, location, background_info, products_name, descriptions, photo1?, photo2?)
+        # products_name может быть массивом (multiple select) — преобразуем в строку через запятую
+        products_name = fields_dict.get("products_name", "")
+        if isinstance(products_name, list):
+            products_name = ", ".join(products_name)
+        
         payload = {
             **base_payload,
             "domain": domain,
             "place_name": fields_dict.get("place_name", ""),
             "location": fields_dict.get("location", ""),
             "background_info": fields_dict.get("background_info", ""),
-            "products_name": fields_dict.get("products_name", ""),
+            "products_name": products_name,
             "descriptions": fields_dict.get("descriptions", ""),
         }
         # Добавляем файлы если есть

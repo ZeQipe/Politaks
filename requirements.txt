@@ -72,7 +72,7 @@ annotated-doc==0.0.4
 # Pillow==10.1.0
 
 # CORS headers для API
-# django-cors-headers==4.3.1
+django-cors-headers==4.3.1
 
 # Django REST Framework (если нужен API)
 # djangorestframework==3.14.0

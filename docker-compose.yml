@@ -22,28 +22,43 @@ services:
   web:
     build: .
     container_name: politaks_web
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+      - logs_volume:/app/logs
     ports:
-      - "8000:8000"
+      - "8000:8000"   # Django
+      - "8001:8001"   # Assistants API
+      - "8002:8002"   # Sheets API
     environment:
-      - DJANGO_ENV=${DJANGO_ENV:-development}
-      - SECRET_KEY=${SECRET_KEY:-django-insecure-@h2o*k-^&g#q(r*i-ddv$b2$9vw$jfzrvqm2nl^lrq5j85pb(3)}
-      - DEBUG=${DEBUG:-True}
+      # Django
+      - DJANGO_ENV=${DJANGO_ENV:-production}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG:-False}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      - LANGUAGE_CODE=${LANGUAGE_CODE:-ru-ru}
+      - TIME_ZONE=${TIME_ZONE:-Europe/Moscow}
+      # Database
       - DB_ENGINE=django.db.backends.postgresql
       - DB_NAME=${DB_NAME:-politaks_db}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_HOST=db
       - DB_PORT=5432
-      - LANGUAGE_CODE=${LANGUAGE_CODE:-ru-ru}
-      - TIME_ZONE=${TIME_ZONE:-Europe/Moscow}
+      # Microservices (внутренние URL для Docker)
+      - ASSISTANTS_API_URL=http://localhost:8001
+      - SHEETS_API_URL=http://localhost:8002
+      # OpenAI
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PROXY=${PROXY:-}
+      # Google Sheets
+      - GOOGLE_SH_CREDS=${GOOGLE_SH_CREDS}
+      # Security
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      # Gunicorn
+      - GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
+      - GUNICORN_THREADS=${GUNICORN_THREADS:-2}
     depends_on:
       db:
         condition: service_healthy
@@ -53,4 +68,4 @@ volumes:
   postgres_data:
   static_volume:
   media_volume:
-
+  logs_volume:

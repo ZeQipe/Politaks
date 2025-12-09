@@ -9,13 +9,13 @@ from openai import AsyncOpenAI
 from .llm_instructions import *
 from .models import ReviewsResponse
 from .other_utils import get_product_link, get_related_products
-from .settings import LOGS_DIR, OPEN_AI_API_KEY, PROXY, logger
+from .settings import LOGS_DIR, OPENAI_API_KEY, PROXY, logger
 
 
 class OpenAIAgent:
     def __init__(self):
         _http_client = httpx.AsyncClient(proxy=PROXY)
-        self.client = AsyncOpenAI(api_key=OPEN_AI_API_KEY, http_client=_http_client)
+        self.client = AsyncOpenAI(api_key=OPENAI_API_KEY, http_client=_http_client)
 
 
     async def get_llm_answer(self,

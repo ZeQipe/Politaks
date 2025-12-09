@@ -35,4 +35,4 @@ logging.getLogger("openai").setLevel(logging.INFO)
 logging.getLogger("httpcore").setLevel(logging.INFO)
 
 PROXY = os.getenv("PROXY")
-OPEN_AI_API_KEY = os.getenv("OPEN_AI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

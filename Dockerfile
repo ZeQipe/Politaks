@@ -19,21 +19,31 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # Устанавливаем Python зависимости
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 
 # Копируем проект
 COPY . .
 
-# Создаем директории для статики и медиа
-RUN mkdir -p /app/staticfiles /app/media /app/logs
+# Делаем entrypoint исполняемым
+RUN chmod +x docker-entrypoint.sh
+
+# Создаем директории для статики, медиа и логов
+RUN mkdir -p /app/staticfiles /app/media /app/logs \
+    /app/service/assistants/data/logs \
+    /app/service/sheets/data/logs
 
 # Создаем пользователя для запуска приложения
 RUN useradd -m -u 1000 django && chown -R django:django /app
 USER django
 
-# Открываем порт
-EXPOSE 8000
+# Открываем порты: Django (8000), Assistants (8001), Sheets (8002)
+EXPOSE 8000 8001 8002
 
-# Команда запуска
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Переменные окружения по умолчанию
+ENV DJANGO_ENV=production
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV DOCKER_CONTAINER=1
 
+# Entrypoint для запуска всех сервисов
+ENTRYPOINT ["./docker-entrypoint.sh"]

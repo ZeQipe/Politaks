@@ -94,7 +94,7 @@ def _get_tasks_items(only_active: bool, only_with_history: bool):
         items.append({
             "id": str(assistant.id),
             "label": assistant.title,
-            "value": assistant.title,
+            "value": assistant.key_title,
             "default": i == 0  # Первый (наименьший ID) по умолчанию
         })
     
@@ -118,7 +118,7 @@ def _get_models_items(only_active: bool, only_with_history: bool):
         items.append({
             "id": str(model.id),
             "label": model.name,
-            "value": model.name,
+            "value": str(model.id),
             "default": i == 0  # Первый (наименьший ID) по умолчанию
         })
     
@@ -133,7 +133,7 @@ def _get_domains_items(only_active: bool, only_with_history: bool):
     items.append({
         "id": "main",
         "label": "Основной",
-        "value": "Основной",
+        "value": "main",
         "default": True
     })
     
@@ -148,7 +148,7 @@ def _get_domains_items(only_active: bool, only_with_history: bool):
         items.append({
             "id": str(satellite.id),
             "label": satellite.title,
-            "value": satellite.domen,
+            "value": str(satellite.id),
             "default": False
         })
     
@@ -160,27 +160,27 @@ def get_form_config(task_id: str, domain_id: str):
     Получение конфигурации формы для генерации
     
     Args:
-        task_id: ID ассистента
+        task_id: key_title ассистента
         domain_id: ID домена ('main' или ID Satellite)
     
     Returns:
         dict: {"success": bool, "data": list, "error": str}
     """
     try:
-        # Находим ассистента
+        # Находим ассистента (task_id = key_title)
         try:
-            assistant = Assistant.objects.get(id=task_id)
+            assistant = Assistant.objects.get(key_title=task_id)
         except Assistant.DoesNotExist:
             return {
                 "success": False,
                 "data": None,
-                "error": f"Ассистент с ID '{task_id}' не найден"
+                "error": f"Ассистент с ключом '{task_id}' не найден"
             }
         
         # Получаем связанные Inputer через AssistantInputer
         assistant_inputers = AssistantInputer.objects.filter(
             assistant=assistant
-        ).select_related('inputer').order_by('id')
+        ).select_related('inputer').order_by('order', 'id')
         
         # Формируем массив полей формы
         form_fields = []
