@@ -14,7 +14,8 @@ from .settings import LOGS_DIR, OPENAI_API_KEY, PROXY, logger
 
 class OpenAIAgent:
     def __init__(self):
-        _http_client = httpx.AsyncClient(proxy=PROXY)
+        # PROXY может быть пустой строкой — тогда не используем прокси
+        _http_client = httpx.AsyncClient(proxy=PROXY if PROXY else None)
         self.client = AsyncOpenAI(api_key=OPENAI_API_KEY, http_client=_http_client)
 
 
