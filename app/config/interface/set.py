@@ -31,7 +31,7 @@ def generate_content(task_id: str, model_id: str, domain_id: str, fields: list, 
     Генерация контента
     
     Args:
-        task_id: key_title ассистента
+        task_id: ID ассистента (строка)
         model_id: ID модели (строка)
         domain_id: ID домена ('main' или ID Satellite)
         fields: массив полей [{name: str, value: str}]
@@ -42,14 +42,14 @@ def generate_content(task_id: str, model_id: str, domain_id: str, fields: list, 
         dict: {"success": bool, "data": dict, "error": str}
     """
     try:
-        # Валидация ассистента (task_id = key_title)
+        # Валидация ассистента по ID
         try:
-            assistant = Assistant.objects.get(key_title=task_id)
+            assistant = Assistant.objects.get(id=task_id)
         except Assistant.DoesNotExist:
             return {
                 "success": False,
                 "data": None,
-                "error": f"Ассистент с ключом '{task_id}' не найден"
+                "error": f"Ассистент с ID '{task_id}' не найден"
             }
         
         # Валидация модели

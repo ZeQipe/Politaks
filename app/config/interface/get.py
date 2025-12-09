@@ -160,21 +160,21 @@ def get_form_config(task_id: str, domain_id: str):
     Получение конфигурации формы для генерации
     
     Args:
-        task_id: key_title ассистента
+        task_id: ID ассистента (строка)
         domain_id: ID домена ('main' или ID Satellite)
     
     Returns:
         dict: {"success": bool, "data": list, "error": str}
     """
     try:
-        # Находим ассистента (task_id = key_title)
+        # Находим ассистента по ID
         try:
-            assistant = Assistant.objects.get(key_title=task_id)
+            assistant = Assistant.objects.get(id=task_id)
         except Assistant.DoesNotExist:
             return {
                 "success": False,
                 "data": None,
-                "error": f"Ассистент с ключом '{task_id}' не найден"
+                "error": f"Ассистент с ID '{task_id}' не найден"
             }
         
         # Получаем связанные Inputer через AssistantInputer

@@ -16,6 +16,6 @@ urlpatterns = [
     # Next.js static files (_next/)
     re_path(r'^_next/(?P<path>.*)$', serve_next_static, name='next_static'),
     
-    # Frontend (все остальные пути)
-    re_path(r'^(?P<path>.*)$', serve_frontend, name='frontend'),
+    # Frontend (все пути КРОМЕ api/ и admin/)
+    re_path(r'^(?!api/|admin/)(?P<path>.*)$', serve_frontend, name='frontend'),
 ]

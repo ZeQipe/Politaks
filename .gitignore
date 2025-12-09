@@ -18,6 +18,7 @@ db.sqlite3-journal
 /static/
 /media/
 *.pot
+000*
 
 # Environment variables
 .env
