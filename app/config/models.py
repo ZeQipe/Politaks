@@ -8,7 +8,7 @@ class Models(models.Model):
     id = models.BigAutoField(primary_key=True, verbose_name='ID')
     name = models.CharField(max_length=255, verbose_name='Название')
     url = models.CharField(max_length=500, verbose_name='URL')
-    key = models.CharField(max_length=255, verbose_name='Ключ')
+    encrypted_key = models.TextField(verbose_name='Зашифрованный ключ')
     is_active = models.BooleanField(default=True, verbose_name='Активна')
     createAt = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
     
@@ -20,6 +20,16 @@ class Models(models.Model):
     
     def __str__(self):
         return self.name
+    
+    def set_key(self, api_key: str):
+        """Шифрует и сохраняет API ключ"""
+        from core.encryption import encrypt_api_key
+        self.encrypted_key = encrypt_api_key(api_key)
+    
+    def get_key(self) -> str:
+        """Расшифровывает и возвращает API ключ"""
+        from core.encryption import decrypt_api_key
+        return decrypt_api_key(self.encrypted_key)
 
 
 class Inputer(models.Model):
@@ -68,6 +78,16 @@ class Inputer(models.Model):
         blank=True, 
         default=None,
         verbose_name='Тип выбора',
+        help_text='Только для select'
+    )
+    select_search = models.BooleanField(
+        default=False,
+        verbose_name='Поиск в select',
+        help_text='Только для select'
+    )
+    multi_select = models.BooleanField(
+        default=False,
+        verbose_name='Мультивыбор',
         help_text='Только для select'
     )
     createAt = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
@@ -120,10 +140,12 @@ class Assistant(models.Model):
     """Модель ассистента"""
     
     id = models.BigAutoField(primary_key=True, verbose_name='ID')
+    key_title = models.CharField(max_length=255, verbose_name='Ключ (системное название)')
     title = models.CharField(max_length=255, verbose_name='Название')
     instruction = models.TextField(verbose_name='Инструкция')
     maks_token = models.IntegerField(null=True, blank=True, verbose_name='Максимум токенов')
     temperatures = models.FloatField(null=True, blank=True, verbose_name='Температура')
+    default_sheets_id = models.IntegerField(null=True, blank=True, verbose_name='ID листа по умолчанию')
     input_columns = models.ManyToManyField(
         Inputer,
         through='AssistantInputer',
@@ -170,6 +192,10 @@ class AssistantInputer(models.Model):
         default='required',
         verbose_name='Обязательность'
     )
+    order = models.IntegerField(
+        default=0,
+        verbose_name='Порядок отображения'
+    )
     createAt = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
     
     class Meta:
@@ -177,7 +203,7 @@ class AssistantInputer(models.Model):
         verbose_name = 'Связь Ассистент-Инпутер'
         verbose_name_plural = 'Связи Ассистент-Инпутер'
         unique_together = ['assistant', 'inputer']
-        ordering = ['id']
+        ordering = ['order', 'id']
     
     def __str__(self):
         return f"{self.assistant.title} - {self.inputer.name} ({self.get_required_display()})"

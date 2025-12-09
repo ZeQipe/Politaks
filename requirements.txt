@@ -7,6 +7,67 @@ psycopg2-binary==2.9.9
 # ASGI/WSGI сервер для production
 gunicorn==21.2.0
 
+# Шифрование API ключей
+cryptography==41.0.7
+
+# =============================================================================
+# Service: Assistants + Sheets (FastAPI микросервисы)
+# =============================================================================
+
+# FastAPI и ASGI сервер
+fastapi==0.121.1
+uvicorn==0.38.0
+starlette==0.49.3
+
+# Pydantic (валидация данных)
+pydantic==2.12.4
+pydantic_core==2.41.5
+annotated-types==0.7.0
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+
+# OpenAI API
+openai==2.7.2
+httpx==0.28.1
+httpcore==1.0.9
+distro==1.9.0
+jiter==0.12.0
+tqdm==4.67.1
+
+# Google Sheets API
+gspread==6.2.1
+google-auth==2.41.1
+google-auth-oauthlib==1.2.3
+oauthlib==3.3.1
+requests-oauthlib==2.0.0
+cachetools==6.2.1
+pyasn1==0.6.1
+pyasn1_modules==0.4.2
+rsa==4.9.1
+
+# HTTP клиенты
+requests==2.32.5
+urllib3==2.5.0
+certifi==2025.11.12
+charset-normalizer==3.4.4
+idna==3.11
+
+# Async
+anyio==4.11.0
+sniffio==1.3.1
+h11==0.16.0
+
+# Утилиты
+python-dotenv==1.2.1
+python-multipart==0.0.20
+click==8.3.0
+colorama==0.4.6
+annotated-doc==0.0.4
+
+# =============================================================================
+# Опциональные зависимости (раскомментировать при необходимости)
+# =============================================================================
+
 # Для работы с изображениями
 # Pillow==10.1.0
 
@@ -21,7 +82,7 @@ gunicorn==21.2.0
 # openpyxl==3.1.2
 # pandas==2.1.3
 
-# Celery для фоновых задач (опционально)
+# Celery для фоновых задач
 # celery==5.3.4
 # redis==5.0.1
 
@@ -38,4 +99,3 @@ gunicorn==21.2.0
 
 # Безопасность
 # django-environ==0.11.2
-

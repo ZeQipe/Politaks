@@ -69,6 +69,3 @@ try:
 except ImportError:
     pass
 
-print("🚀 Django запущен в режиме: development")
-print(f"📊 DEBUG: {DEBUG}")
-

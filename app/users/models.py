@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
+from app.config.models import Assistant
 
 
 class UserManager(BaseUserManager):
@@ -39,6 +40,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     login = models.CharField(max_length=150, unique=True, verbose_name='Логин')
     password = models.CharField(max_length=128, verbose_name='Пароль')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, verbose_name='Роль')
+    default_excel_url = models.CharField(max_length=500, null=True, blank=True, verbose_name='URL Excel по умолчанию')
+    assistants = models.ManyToManyField(
+        Assistant,
+        through='UserAssistant',
+        blank=True,
+        related_name='users',
+        verbose_name='Ассистенты'
+    )
     is_superuser = models.BooleanField(default=False, verbose_name='Суперпользователь')
     is_active = models.BooleanField(default=True, verbose_name='Активен')
     createAt = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
@@ -61,3 +70,33 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         """Свойство для доступа к админке Django"""
         return self.is_superuser or self.role == 'admin'
+
+
+class UserAssistant(models.Model):
+    """Промежуточная таблица для связи User и Assistant"""
+    
+    id = models.BigAutoField(primary_key=True, verbose_name='ID')
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='user_assistants',
+        verbose_name='Пользователь'
+    )
+    assistant = models.ForeignKey(
+        Assistant,
+        on_delete=models.CASCADE,
+        related_name='assistant_users',
+        verbose_name='Ассистент'
+    )
+    sheets_id = models.IntegerField(null=True, blank=True, verbose_name='ID листа')
+    createAt = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
+    
+    class Meta:
+        db_table = 'user_assistant'
+        verbose_name = 'Связь Пользователь-Ассистент'
+        verbose_name_plural = 'Связи Пользователь-Ассистент'
+        unique_together = ['user', 'assistant']
+        ordering = ['id']
+    
+    def __str__(self):
+        return f"{self.user.login} - {self.assistant.title} (sheets_id: {self.sheets_id})"

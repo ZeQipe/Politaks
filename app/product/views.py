@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from .interface.get import get_related_products_by_domain
-from .interface.set import populate_products_from_data
+from .interface.set import populate_products_from_data, populate_assistants_from_data
 import json
 
 # Пароль для доступа к роуту заполнения БД
@@ -96,20 +96,42 @@ def populate_database(request):
                 'error': 'Неверный пароль'
             }, status=403)
         
-        # Запускаем заполнение БД
-        result = populate_products_from_data()
+        # Запускаем заполнение БД продуктами
+        products_result = populate_products_from_data()
+        
+        # Запускаем заполнение БД ассистентами
+        assistants_result = populate_assistants_from_data()
+        
+        # Объединяем результаты
+        all_errors = (products_result['errors'] or []) + (assistants_result['errors'] or [])
+        overall_success = products_result['success'] and assistants_result['success']
         
         return JsonResponse({
-            'success': result['success'],
+            'success': overall_success,
             'message': 'Заполнение БД завершено',
             'statistics': {
-                'created_products': result['created_products'],
-                'skipped_products': result['skipped_products'],
-                'created_relations': result['created_relations'],
-                'skipped_relations': result['skipped_relations']
+                'products': {
+                    'created': products_result['created_products'],
+                    'skipped': products_result['skipped_products'],
+                },
+                'relations': {
+                    'created': products_result['created_relations'],
+                    'skipped': products_result['skipped_relations'],
+                },
+                'inputers': {
+                    'created': assistants_result['created_inputers'],
+                    'skipped': assistants_result['skipped_inputers'],
+                },
+                'assistants': {
+                    'created': assistants_result['created_assistants'],
+                    'skipped': assistants_result['skipped_assistants'],
+                },
+                'assistant_inputer_links': {
+                    'created': assistants_result['created_links'],
+                }
             },
-            'errors': result['errors'] if result['errors'] else None
-        }, status=200 if result['success'] else 207)
+            'errors': all_errors if all_errors else None
+        }, status=200 if overall_success else 207)
         
     except Exception as e:
         return JsonResponse({
