@@ -123,7 +123,6 @@ class Inputer(models.Model):
         # select: фиксированные значения
         elif self.type == 'select':
             self.size = None
-            self.label = 'Наименование товара'
             if not self.type_select:
                 self.type_select = 'product'
         
