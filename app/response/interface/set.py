@@ -3,7 +3,8 @@
 Возвращают результат в едином формате
 """
 from ..models import Response
-from app.config.models import Assistant, Satellite
+from app.config.models import Assistant
+from app.product.models import Satellite
 from app.users.models import User
 
 
