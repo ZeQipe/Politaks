@@ -109,3 +109,41 @@ type TGenerationResult = {
 };
 ```
 
+---
+
+### 4. POST `/api/generation/generate-excel`
+**Отправляю:** `TGenerationExcelRequest` (JSON)
+```typescript
+type TGenerationExcelRequest = {
+  filters: {
+    taskId: string;
+    modelId: string;
+  };
+  excelLink: string;
+  range: {
+    from: number;
+    to: number;
+  };
+};
+```
+
+**Примечания:**
+- Используется для генерации контента из Excel файла
+- Поле `excelLink` содержит ссылку на Excel файл
+- Поля `range.from` и `range.to` указывают диапазон строк для обработки (0 означает отсутствие ограничения)
+- Фильтр `domainId` не требуется для Excel генерации
+
+**Возвращает:** `TGenerationResponse`
+```typescript
+type TGenerationResponse = {
+  success: boolean;
+  data?: TGenerationResult;
+  error?: string;
+};
+
+type TGenerationResult = {
+  html: string;
+  text: string;
+};
+```
+
