@@ -36,3 +36,4 @@ logging.getLogger("httpcore").setLevel(logging.INFO)
 
 PROXY = os.getenv("PROXY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+DJANGO_API_URL = os.getenv("DJANGO_API_URL")

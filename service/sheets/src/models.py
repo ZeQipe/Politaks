@@ -3,11 +3,13 @@ from pydantic import BaseModel, Field
 
 
 class ProcessGoogleSheetsRequest(BaseModel):
+    user_id: str
     llm_model: str
     link: str
     name_sheet: dict[str, int]
 
 class ProcessGoogleSheetRequest(BaseModel):
+    user_id: str
     llm_model: str
     link: str
     assistant: str

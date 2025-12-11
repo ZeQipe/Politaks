@@ -25,6 +25,7 @@ async def process_google_sheet_endpoint(request: ProcessGoogleSheetRequest):
     """Эндпоинт для обработки одного листа Google таблицы."""
     try:
         await process_google_sheet(
+            request.user_id,
             request.llm_model,
             request.link,
             request.assistant,
@@ -69,6 +70,7 @@ async def process_google_sheets_endpoint(request: ProcessGoogleSheetsRequest):
     """Эндпоинт для обработки всей Google таблицы."""
     try:
         await process_google_sheets(
+            request.user_id,
             request.llm_model,
             request.link,
             request.name_sheet,

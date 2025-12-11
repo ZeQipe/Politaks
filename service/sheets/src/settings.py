@@ -7,12 +7,11 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Корень проекта (4 уровня вверх от settings.py)
+load_dotenv()
+
+
 ROOTDIR = Path(__file__).parent.parent.parent.parent
 SERVICE_DIR = Path(__file__).parent.parent
-
-# Загружаем .env из корня проекта
-load_dotenv(ROOTDIR / '.env')
 
 LOGS_DIR = SERVICE_DIR / "data/logs/"
 os.makedirs(LOGS_DIR, exist_ok=True)
@@ -34,6 +33,7 @@ logger = logging.getLogger()
 logging.getLogger("asyncio").setLevel(logging.INFO)
 logging.getLogger("urllib3").setLevel(logging.INFO)
 
+DJANGO_API_URL = os.getenv("DJANGO_API_URL")
 get_env = os.getenv("GOOGLE_SH_CREDS")
 if get_env:
     try:

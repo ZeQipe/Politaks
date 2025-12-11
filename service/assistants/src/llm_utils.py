@@ -60,7 +60,7 @@ class OpenAIAgent:
         prompt = f"{prompt}\n\n<description>\nОписание:\n{description}\n</description>"
         prompt = f"{prompt}\n<usage>\nПрименение:\n{usage}\n</usage>"
         if related_products:
-            prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}</related_products>"
+            prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}\n</related_products>"
 
         temp_response = await self.get_llm_answer(subdescription_instruction, prompt, model=llm_model)
         response_output = await self.negative_prompt(llm_model, temp_response.output_text)
@@ -81,7 +81,7 @@ class OpenAIAgent:
         if usage:
             prompt = f"{prompt}\n<usage>\nПрименение:\n{usage}\n</usage>"
         if related_products:
-            prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}</related_products>"
+            prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}\n</related_products>"
 
         temp_response = await self.get_llm_answer(description_instruction, prompt, model=llm_model)
         response_output = await self.negative_prompt(llm_model, temp_response.output_text)
@@ -92,7 +92,7 @@ class OpenAIAgent:
 
 
     async def negative_prompt(self, llm_model: str, result: str) -> str:
-        prompt = f"Полученный результат:\n{result}"
+        prompt = f"**Полученный результат:**\n{result}"
         response = await self.get_llm_answer(negative_instruction, prompt, model=llm_model)
 
         await self.log_to_file("negative_prompt_log", response)
@@ -104,7 +104,7 @@ class OpenAIAgent:
         # related_products = await get_related_products(domain, [product_name])
         prompt = f"<usage>\nПрименение:\n{usage}\n</usage>"
         # if related_products:
-        #     prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}</related_products>"
+        #     prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}\n</related_products>"
         response = await self.get_llm_answer(usage_instruction, prompt, model=llm_model)
 
         await self.log_to_file("get_usage_log", response)
@@ -116,7 +116,7 @@ class OpenAIAgent:
         # related_products = await get_related_products(domain, [product_name])
         prompt = f"<features>\nСвойства:\n{features}\n</features>"
         # if related_products:
-        #     prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}</related_products>"
+        #     prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}\n</related_products>"
         response = await self.get_llm_answer(features_instruction, prompt, model=llm_model)
 
         await self.log_to_file("get_features_log", response)
@@ -135,7 +135,7 @@ class OpenAIAgent:
         if usage:
             prompt = f"{prompt}\n<usage>\nПрименение:\n{usage}\n</usage>"
         if related_products:
-            prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}</related_products>"
+            prompt = f"{prompt}\n<related_products>\nСвязанные товары:\n{related_products}\n</related_products>"
         response = await self.get_llm_answer(preview_instruction, prompt, model=llm_model)
 
         await self.log_to_file("get_previews_log", response)
@@ -168,10 +168,10 @@ class OpenAIAgent:
     ) -> str:
         products_links = await get_products_links(domain, [name.strip() for name in products_name.split(",")])
         prompt = f"<place_name>\nНазвание места/объекта:\n{place_name}\n</place_name>"
-        prompt = f"{prompt}\n\n<location>\nРасположение:\n{location}\n</location>"
-        prompt = f"{prompt}\n\n<background_info>\nДополнительная информация:\n{background_info}\n</background_info>"
-        prompt = f"{prompt}\n\n<used_products>\nИспользованные товары:\n{products_links}\n</used_products>"
-        prompt = f"{prompt}\n\n<descriptions>\nОписания использованных товаров:\n{descriptions}\n</descriptions>"
+        prompt = f"{prompt}\n<location>\nРасположение:\n{location}\n</location>"
+        prompt = f"{prompt}\n<background_info>\nДополнительная информация:\n{background_info}\n</background_info>"
+        prompt = f"{prompt}\n<used_products>\nИспользованные товары:\n{products_links}\n</used_products>"
+        prompt = f"{prompt}\n<descriptions>\nОписания использованных товаров:\n{descriptions}\n</descriptions>"
         content = [{ "type": "input_text", "text": prompt }]
 
         if photo1:
@@ -225,7 +225,7 @@ class OpenAIAgent:
         prompt = f"<seo_high_freq>\nВЧ:\n{seo_high_freq}\n</seo_high_freq>"
         prompt = f"{prompt}\n<seo_medium_freq>\nСЧ:\n{seo_medium_freq}\n</seo_medium_freq>"
         prompt = f"{prompt}\n<seo_low_freq>\nНЧ:\n{seo_low_freq}\n</seo_low_freq>"
-        prompt = f"{prompt}\n<topic>\nТема:\n{topic}\n</topic>"
+        prompt = f"{prompt}\n\n<topic>\nТема:\n{topic}\n</topic>"
         prompt = f"{prompt}\n<comment>\nКомментарий:\n{comment}\n</comment>"
 
         response = await self.get_llm_answer(article_instruction, prompt, model=llm_model)
@@ -242,7 +242,7 @@ class OpenAIAgent:
         prompt = f"<seo_high_freq>\nВЧ:\n{seo_high_freq}\n</seo_high_freq>"
         prompt = f"{prompt}\n<seo_medium_freq>\nСЧ:\n{seo_medium_freq}\n</seo_medium_freq>"
         prompt = f"{prompt}\n<seo_low_freq>\nНЧ:\n{seo_low_freq}\n</seo_low_freq>"
-        prompt = f"{prompt}\n<tech_instruction>\nТехническая инструкция:\n{tech_instruction}\n</tech_instruction>"
+        prompt = f"{prompt}\n\n<tech_instruction>\nТехническая инструкция:\n{tech_instruction}\n</tech_instruction>"
         prompt = f"{prompt}\n<products_links>\nСсылки на товары:\n{products_links}\n</products_links>"
         response = await self.get_llm_answer(tech_instruction_instruction, prompt, model=llm_model)
 
@@ -258,7 +258,7 @@ class OpenAIAgent:
         prompt = f"<seo_high_freq>\nВЧ:\n{seo_high_freq}\n</seo_high_freq>"
         prompt = f"{prompt}\n<seo_medium_freq>\nСЧ:\n{seo_medium_freq}\n</seo_medium_freq>"
         prompt = f"{prompt}\n<seo_low_freq>\nНЧ:\n{seo_low_freq}\n</seo_low_freq>"
-        prompt = f"{prompt}\n<category_description>\nОписание в (под)категории:\n{category_description}\n</category_description>"
+        prompt = f"{prompt}\n\n<category_description>\nОписание в (под)категории:\n{category_description}\n</category_description>"
         prompt = f"{prompt}\n<products_links>\nСсылки на товары:\n{products_links}\n</products_links>"
         response = await self.get_llm_answer(category_description_instruction, prompt, model=llm_model)
 

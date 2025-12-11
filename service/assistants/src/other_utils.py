@@ -1,8 +1,5 @@
 import httpx
-from .settings import logger
-
-# URL Django сервера
-DJANGO_API_URL = "http://localhost:8000/api/products"
+from .settings import logger, DJANGO_API_URL
 
 
 async def get_related_products(domain: str, products_name: list[str]) -> dict:
@@ -22,10 +19,11 @@ async def get_related_products(domain: str, products_name: list[str]) -> dict:
             params["domain_url"] = domain
 
         async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(f"{DJANGO_API_URL}/links/", params=params)
+            response = await client.get(f"{DJANGO_API_URL}/api/products/links/", params=params)
 
         if response.status_code == 200:
-            return response.json()
+            data = response.json()
+            return data.get("product_name", {})
         else:
             logger.warning(f"get_related_products() failed: {response.status_code} - {response.text}")
             return {}
@@ -54,7 +52,8 @@ async def get_products_links(domain: str, products_name: list[str]):
             response = await client.get(f"{DJANGO_API_URL}/link/", params=params)
 
         if response.status_code == 200:
-            return response.json()
+            data = response.json()
+            return data.get("data", {})
         else:
             logger.warning(f"get_product_link() failed: {response.status_code} - {response.text}")
             return {}
