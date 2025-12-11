@@ -13,6 +13,12 @@ class AssistantsAPI:
         self.base_url = base_url or os.getenv('ASSISTANTS_API_URL', 'http://localhost:7999')
         self.timeout = timeout
     
+    def _normalize_domain(self, domain: Optional[str]) -> str:
+        """Нормализует domain: None или пустая строка → 'main'"""
+        if domain is None or (isinstance(domain, str) and domain.strip() == ""):
+            return "main"
+        return domain
+    
     async def _post(self, endpoint: str, payload: dict) -> dict:
         """Базовый POST запрос"""
         async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -50,7 +56,7 @@ class AssistantsAPI:
         """
         payload = {
             "llm_model": llm_model,
-            "domain": domain,
+            "domain": self._normalize_domain(domain),
             "product_name": product_name,
             "description": description,
             "usage": usage,
@@ -80,7 +86,7 @@ class AssistantsAPI:
         """
         payload = {
             "llm_model": llm_model,
-            "domain": domain,
+            "domain": self._normalize_domain(domain),
             "product_name": product_name,
             "description": description,
             "usage": usage,
@@ -106,7 +112,7 @@ class AssistantsAPI:
         """
         payload = {
             "llm_model": llm_model,
-            "domain": domain,
+            "domain": self._normalize_domain(domain),
             "product_name": product_name,
             "usage": usage,
         }
@@ -128,7 +134,7 @@ class AssistantsAPI:
         """
         payload = {
             "llm_model": llm_model,
-            "domain": domain,
+            "domain": self._normalize_domain(domain),
             "product_name": product_name,
             "features": features,
         }
@@ -178,7 +184,7 @@ class AssistantsAPI:
         """
         payload = {
             "llm_model": llm_model,
-            "domain": domain,
+            "domain": self._normalize_domain(domain),
             "tech_instruction": tech_instruction,
             "seo_high_freq": seo_high_freq,
             "seo_medium_freq": seo_medium_freq,
@@ -204,7 +210,7 @@ class AssistantsAPI:
         """
         payload = {
             "llm_model": llm_model,
-            "domain": domain,
+            "domain": self._normalize_domain(domain),
             "category_description": category_description,
             "seo_high_freq": seo_high_freq,
             "seo_medium_freq": seo_medium_freq,
@@ -236,7 +242,7 @@ class AssistantsAPI:
         """
         payload = {
             "llm_model": llm_model,
-            "domain": domain,
+            "domain": self._normalize_domain(domain),
             "product_name": product_name,
             "description": description,
             "usage": usage,
@@ -306,7 +312,7 @@ class AssistantsAPI:
         """
         data = {
             "llm_model": llm_model,
-            "domain": domain,
+            "domain": self._normalize_domain(domain),
             "place_name": place_name,
             "location": location,
             "background_info": background_info,
