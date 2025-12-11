@@ -59,6 +59,7 @@ services:
       # Gunicorn
       - GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
       - GUNICORN_THREADS=${GUNICORN_THREADS:-2}
+      - GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
     depends_on:
       db:
         condition: service_healthy

@@ -59,6 +59,7 @@ if [ "$DJANGO_ENV" = "production" ]; then
         --bind 0.0.0.0:${DJANGO_PORT:-8000} \
         --workers ${GUNICORN_WORKERS:-4} \
         --threads ${GUNICORN_THREADS:-2} \
+        --timeout ${GUNICORN_TIMEOUT:-120} \
         --access-logfile - \
         --error-logfile - \
         core.wsgi:application
