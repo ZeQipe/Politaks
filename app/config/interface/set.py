@@ -204,7 +204,7 @@ def _build_payload(assistant_key: str, llm_model: str, domain: str, fields_dict:
         return {
             **base_payload,
             "usage": fields_dict.get("usage", ""),
-            "domain": domain if domain != "main" else None,
+            "domain": domain,
             "product_name": fields_dict.get("product_name"),
         }
     
@@ -213,7 +213,7 @@ def _build_payload(assistant_key: str, llm_model: str, domain: str, fields_dict:
         return {
             **base_payload,
             "features": fields_dict.get("features", ""),
-            "domain": domain if domain != "main" else None,
+            "domain": domain,
             "product_name": fields_dict.get("product_name"),
         }
     
