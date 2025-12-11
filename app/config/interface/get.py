@@ -381,7 +381,7 @@ def get_history(count: int = 10, offset: int = 0, task_id: str = None, model_id:
             
             data.append({
                 "id": str(response.id),
-                "date": response.createAt.strftime("%d/%m/%y  %H:%M"),
+                "date": response.createAt.strftime("%d.%m.%Y %H:%M"), 
                 "task": response.assistant,
                 "domain": domain_display,
                 "model": response.model,
