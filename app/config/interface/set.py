@@ -407,18 +407,16 @@ def generate_excel_content(task_id: str, model_id: str, excel_link: str, user_id
             }
         
         # Формируем payload для Sheets API
+        # range_from >= 3, range_to = -1 (весь документ) или >= 3
         payload = {
             "llm_model": model.name,
             "link": excel_link,
             "assistant": assistant.key_title,
             "sheet_id": assistant.default_sheets_id or 0,
             "user_id": user_id,
+            "from_row": range_from,
+            "to_row": range_to,
         }
-        
-        # Если range_to > 0, добавляем диапазон
-        if range_to > 0:
-            payload["from_row"] = range_from
-            payload["to_row"] = range_to
         
         print(f"=== SHEETS PAYLOAD для {assistant.key_title} ===")
         print(json.dumps(payload, indent=2, ensure_ascii=False))

@@ -221,11 +221,32 @@ def generate_excel(request):
     # Получаем range
     range_data = data.get('range', {})
     try:
-        range_from = int(range_data.get('from', 0))
+        range_from = int(range_data.get('from', 3))
         range_to = int(range_data.get('to', 0))
     except (ValueError, TypeError):
-        range_from = 0
-        range_to = 0
+        return JsonResponse({
+            'success': False,
+            'error': 'Параметры range.from и range.to должны быть числами'
+        }, status=400)
+    
+    # Валидация range: from >= 3, to == 0 или to >= 3
+    if range_from < 3:
+        return JsonResponse({
+            'success': False,
+            'error': f'Параметр range.from должен быть >= 3, получено: {range_from}'
+        }, status=400)
+    
+    if range_to != 0 and range_to < 3:
+        return JsonResponse({
+            'success': False,
+            'error': f'Параметр range.to должен быть 0 или >= 3, получено: {range_to}'
+        }, status=400)
+    
+    # Трансформация для микросервиса:
+    # Фронт: from >= 3, to == 0 (весь документ) → Микросервис: from, to = -1
+    # Фронт: from >= 3, to >= 3 → Микросервис: как есть
+    if range_to == 0:
+        range_to = -1
     
     # Валидация обязательных параметров
     if not task_id:
