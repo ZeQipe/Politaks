@@ -33,7 +33,6 @@ async def process_google_sheet_endpoint(request: ProcessGoogleSheetRequest):
             request.from_row,
             request.to_row,
         )
-        return ProcessResponse(status_code=status.HTTP_200_OK, detail="success")
     except gspread.exceptions.WorksheetNotFound as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -63,6 +62,8 @@ async def process_google_sheet_endpoint(request: ProcessGoogleSheetRequest):
     except Exception as e:
         logger.exception(f"Exception {rout1} - {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Exception {rout1} - {e}") from e
+    else:
+        return ProcessResponse(status_code=status.HTTP_200_OK, detail="success")
 
 
 @app.post(rout2:="/process/google_sheets", response_model=ProcessResponse)
@@ -75,7 +76,6 @@ async def process_google_sheets_endpoint(request: ProcessGoogleSheetsRequest):
             request.link,
             request.name_sheet,
         )
-        return ProcessResponse(status_code=status.HTTP_200_OK, detail="success")
     except gspread.exceptions.WorksheetNotFound as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -105,6 +105,8 @@ async def process_google_sheets_endpoint(request: ProcessGoogleSheetsRequest):
     except Exception as e:
         logger.exception(f"Exception {rout2} - {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Exception {rout2} - {e}") from e
+    else:
+        return ProcessResponse(status_code=status.HTTP_200_OK, detail="success")
 
 
 if __name__ == "__main__":
