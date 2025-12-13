@@ -267,10 +267,24 @@ def generate_excel(request):
             'error': 'Параметр excelLink обязателен'
         }, status=400)
     
-    # Получаем user_id из авторизованного пользователя
+    # Получаем user_id из авторизованного пользователя или системного
     user_id = None
     if hasattr(request, 'user') and request.user.is_authenticated:
         user_id = request.user.id
+    else:
+        # Используем системного пользователя (создаём если нет)
+        from app.users.models import User
+        system_user, _ = User.objects.get_or_create(
+            login='system_import',
+            defaults={
+                'firstName': 'System',
+                'lastName': 'Import',
+                'role': 'admin',
+                'is_active': True,
+                'is_superuser': False
+            }
+        )
+        user_id = system_user.id
     
     result = generate_excel_content(
         task_id=task_id,
