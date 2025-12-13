@@ -44,7 +44,7 @@ async def _save_process_data(record: dict, user_id: str, llm_model: str, assista
     }
 
     async with aiohttp.ClientSession() as session, session.post(f"{DJANGO_API_URL}/api/response/save", json=payload) as resp:
-        if resp.status != 200:
+        if resp.status not in {200, 201}:
             error_text = await resp.text()
             logger.error(f"_save_process_data() - Failed for '{assistant}' row={idx}: {resp.status} - {error_text}")
 
