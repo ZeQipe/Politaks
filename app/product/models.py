@@ -35,6 +35,15 @@ class Products(models.Model):
         related_name='products',
         verbose_name='Кто создал'
     )
+    last_edit_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        default=None,
+        related_name='edited_products',
+        verbose_name='Кто последним редактировал'
+    )
     satelitDomens = models.ManyToManyField(
         Satellite,
         blank=True,

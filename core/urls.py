@@ -12,6 +12,8 @@ urlpatterns = [
     # API
     path('api/products/', include('app.product.urls')),
     path('api/response/', include('app.response.urls')),
+    path('api/settings/', include('app.settings_api.urls')),
+    path('api/auth/', include('app.auth_api.urls')),
     path('api/', include('app.config.urls')),
     
     # Next.js static files (_next/)

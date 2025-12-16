@@ -2,15 +2,19 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from core.decorators import login_required_api
 from .interface.get import get_filters_for_generation, get_filters_for_history, get_form_config, get_history
 from .interface.set import generate_content, generate_excel_content
 
 
 @require_http_methods(["GET"])
+@login_required_api
 def generation_filters(request):
     """
     GET /api/generation/filters
     Фильтры для страницы генерации
+    
+    Авторизация: требуется (по сессии)
     """
     result = get_filters_for_generation()
     
@@ -24,10 +28,13 @@ def generation_filters(request):
 
 
 @require_http_methods(["GET"])
+@login_required_api
 def history_filters(request):
     """
     GET /api/history/filters
     Фильтры для страницы истории
+    
+    Авторизация: требуется (по сессии)
     """
     result = get_filters_for_history()
     
@@ -41,10 +48,13 @@ def history_filters(request):
 
 
 @require_http_methods(["GET"])
+@login_required_api
 def history(request):
     """
     GET /api/history?count=10&offset=0&taskId=...&modelId=...&domainId=...
     Получение истории генераций
+    
+    Авторизация: требуется (по сессии)
     """
     # Получаем параметры
     count = request.GET.get('count', '10')
@@ -87,10 +97,13 @@ def history(request):
 
 
 @require_http_methods(["GET"])
+@login_required_api
 def form_config(request):
     """
     GET /api/generation/form-config?taskId=...&domainId=...
     Конфигурация формы для генерации
+    
+    Авторизация: требуется (по сессии)
     """
     task_id = request.GET.get('taskId')
     domain_id = request.GET.get('domainId', 'main')
@@ -114,10 +127,14 @@ def form_config(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required_api
 def generate(request):
     """
     POST /api/generation/generate
     Генерация контента
+    
+    Авторизация: требуется (по сессии)
+    user_id берётся из авторизованного пользователя
     
     Принимает:
     - application/json: {"filters": {...}, "fields": [...]}
@@ -162,10 +179,8 @@ def generate(request):
             'error': 'Параметр filters.modelId обязателен'
         }, status=400)
     
-    # Получаем пользователя (пока anonymous, потом можно из auth)
-    user = "anonymous"
-    if hasattr(request, 'user') and request.user.is_authenticated:
-        user = request.user.login
+    # Получаем пользователя из авторизации (login для сохранения в Response)
+    user = request.user.login
     
     result = generate_content(
         task_id=task_id,
@@ -190,10 +205,14 @@ def generate(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@login_required_api
 def generate_excel(request):
     """
     POST /api/generation/generate-excel
     Генерация контента из Excel файла
+    
+    Авторизация: требуется (по сессии)
+    user_id берётся из авторизованного пользователя
     
     Принимает JSON:
     {
@@ -267,24 +286,8 @@ def generate_excel(request):
             'error': 'Параметр excelLink обязателен'
         }, status=400)
     
-    # Получаем user_id из авторизованного пользователя или системного
-    user_id = None
-    if hasattr(request, 'user') and request.user.is_authenticated:
-        user_id = request.user.id
-    else:
-        # Используем системного пользователя (создаём если нет)
-        from app.users.models import User
-        system_user, _ = User.objects.get_or_create(
-            login='system_import',
-            defaults={
-                'firstName': 'System',
-                'lastName': 'Import',
-                'role': 'admin',
-                'is_active': True,
-                'is_superuser': False
-            }
-        )
-        user_id = system_user.id
+    # Получаем user_id из авторизованного пользователя
+    user_id = request.user.id
     
     result = generate_excel_content(
         task_id=task_id,

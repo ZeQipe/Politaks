@@ -121,3 +121,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
+
+# =============================================================================
+# Auth API Settings
+# =============================================================================
+# Bearer токен для доступа к /auth/* эндпоинтам
+API_BEARER_TOKEN = os.environ.get('API_BEARER_TOKEN', 'politaks-api-secret-token')
+
+# Время жизни CSRF токена в секундах (по умолчанию 5 минут)
+CSRF_TOKEN_TTL = int(os.environ.get('CSRF_TOKEN_TTL', '300'))

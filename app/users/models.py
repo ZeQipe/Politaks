@@ -31,7 +31,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     ROLE_CHOICES = [
         ('admin', 'Администратор'),
-        ('manager', 'Менеджер'),
+        ('moderator', 'Модератор'),
+        ('user', 'Пользователь'),
     ]
     
     id = models.BigAutoField(primary_key=True, verbose_name='ID')

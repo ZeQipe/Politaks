@@ -1,1 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,27215,t=>{t.v("/_next/static/media/upload.5d9c62e0.svg")}]);

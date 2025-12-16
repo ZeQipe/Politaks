@@ -1,0 +1,1341 @@
+openapi: 3.0.3
+info:
+  title: Politaks AI - Settings API
+  description: API для управления настройками приложения
+  version: 1.0.0
+  contact:
+    name: Politaks AI Team
+
+servers:
+  - url: http://localhost:3000/api
+    description: Локальный сервер разработки
+  - url: https://api.politaks.com/api
+    description: Production сервер
+
+tags:
+  - name: User Profile
+    description: Управление профилем пользователя
+  - name: Task Sheet Mappings
+    description: Маппинг задач на листы Excel
+  - name: Goods
+    description: Управление товарами
+  - name: AI Models
+    description: Управление AI моделями
+  - name: Satellites
+    description: Управление доменами-сателлитами
+  - name: Employees
+    description: Управление сотрудниками
+  - name: Roles
+    description: Роли пользователей
+
+paths:
+  # ========================================
+  # USER PROFILE
+  # ========================================
+  /settings/user:
+    get:
+      tags:
+        - User Profile
+      summary: Получить данные пользователя
+      description: Возвращает информацию о текущем пользователе
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDataResponse'
+              example:
+                status: "success"
+                data:
+                  id: "1"
+                  firstName: "Иван"
+                  lastName: "Иванов"
+                  excelBaseUrl: "https://docs.google.com/spreadsheets/d/abc123"
+
+    patch:
+      tags:
+        - User Profile
+      summary: Обновить профиль пользователя
+      description: Обновляет данные профиля пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+            example:
+              firstName: "Иван"
+              lastName: "Иванов"
+              currentPassword: "OldPass123"
+              newPassword: "NewPass123"
+              excelBaseUrl: "https://docs.google.com/spreadsheets/d/abc123"
+      responses:
+        '200':
+          description: Профиль успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateProfileResponse'
+              example:
+                success: true
+                data:
+                  id: "1"
+                  firstName: "Иван"
+                  lastName: "Иванов"
+                  excelBaseUrl: "https://docs.google.com/spreadsheets/d/abc123"
+
+  # ========================================
+  # TASK SHEET MAPPINGS
+  # ========================================
+  /settings/task-sheet-mappings:
+    get:
+      tags:
+        - Task Sheet Mappings
+      summary: Получить маппинги задач на листы
+      description: Возвращает список маппингов задач на листы Excel
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskSheetMappingsResponse'
+              example:
+                status: "success"
+                data:
+                  - taskId: "1"
+                    taskName: "Генерация контента"
+                    sheetId: 1
+                  - taskId: "2"
+                    taskName: "Анализ данных"
+                    sheetId: 2
+
+    patch:
+      tags:
+        - Task Sheet Mappings
+      summary: Обновить маппинги задач
+      description: Обновляет маппинги задач на листы Excel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskSheetMappingsRequest'
+            example:
+              mappings:
+                - taskId: "1"
+                  sheetId: 1
+                - taskId: "2"
+                  sheetId: 2
+      responses:
+        '200':
+          description: Маппинги успешно обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateTaskSheetMappingsResponse'
+              example:
+                success: true
+                data:
+                  - taskId: "1"
+                    taskName: "Генерация контента"
+                    sheetId: 1
+                  - taskId: "2"
+                    taskName: "Анализ данных"
+                    sheetId: 2
+
+  # ========================================
+  # DOMAINS (for goods)
+  # ========================================
+  /settings/domains:
+    get:
+      tags:
+        - Goods
+      summary: Получить доступные домены
+      description: Возвращает список доступных доменов для товаров
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableDomainsResponse'
+              example:
+                status: "success"
+                data:
+                  - id: "1"
+                    name: "Основной домен"
+                    domain: "example.com"
+                  - id: "2"
+                    name: "Дополнительный домен"
+                    domain: "shop.example.com"
+
+  # ========================================
+  # GOODS
+  # ========================================
+  /settings/goods/list:
+    get:
+      tags:
+        - Goods
+      summary: Получить список товаров
+      description: Возвращает список всех товаров
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoodsDataResponse'
+              example:
+                success: "true"
+                data:
+                  - id: "1"
+                    name: "Товар 1"
+                    description: "Описание товара 1"
+                    baseUrl: "https://base.example.com"
+                    satelliteUrl: "https://satellite.example.com"
+                    selectedDomain:
+                      - id: "1"
+                        name: "Основной домен"
+                        domain: "example.com"
+
+  /settings/goods:
+    post:
+      tags:
+        - Goods
+      summary: Создать товар
+      description: Создает новый товар
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGoodsRequest'
+            example:
+              name: "Новый товар"
+              description: "Описание нового товара"
+              baseUrl: "https://base.example.com"
+              satelliteUrl: "https://satellite.example.com"
+              selectedDomain:
+                - id: "1"
+                  name: "Основной домен"
+                  domain: "example.com"
+      responses:
+        '200':
+          description: Товар успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateGoodsResponse'
+              example:
+                success: "true"
+                data:
+                  id: "1"
+                  name: "Новый товар"
+                  description: "Описание нового товара"
+                  baseUrl: "https://base.example.com"
+                  satelliteUrl: "https://satellite.example.com"
+                  selectedDomain:
+                    - id: "1"
+                      name: "Основной домен"
+                      domain: "example.com"
+
+  /settings/goods/{id}:
+    patch:
+      tags:
+        - Goods
+      summary: Обновить товар
+      description: Обновляет существующий товар
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID товара
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGoodsRequest'
+            example:
+              id: "1"
+              name: "Обновленный товар"
+              description: "Новое описание"
+              baseUrl: "https://base.example.com"
+              satelliteUrl: "https://satellite.example.com"
+              selectedDomain:
+                - id: "1"
+                  name: "Основной домен"
+                  domain: "example.com"
+      responses:
+        '200':
+          description: Товар успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateGoodsResponse'
+
+    delete:
+      tags:
+        - Goods
+      summary: Удалить товар
+      description: Удаляет товар по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID товара
+      responses:
+        '200':
+          description: Товар успешно удален
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteGoodsResponse'
+              example:
+                success: "true"
+
+  # ========================================
+  # AI MODELS
+  # ========================================
+  /settings/models:
+    get:
+      tags:
+        - AI Models
+      summary: Получить список AI моделей
+      description: Возвращает список всех AI моделей
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelsResponse'
+              example:
+                success: "true"
+                data:
+                  - id: "1"
+                    name: "GPT-4"
+                    key: "gpt-4"
+                    url: "https://api.openai.com/v1"
+                  - id: "2"
+                    name: "Claude 3"
+                    key: "claude-3"
+                    url: "https://api.anthropic.com/v1"
+
+    post:
+      tags:
+        - AI Models
+      summary: Создать AI модель
+      description: Создает новую AI модель
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateModelRequest'
+            example:
+              name: "GPT-4"
+              key: "gpt-4"
+              url: "https://api.openai.com/v1"
+      responses:
+        '200':
+          description: Модель успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateModelResponse'
+              example:
+                success: "true"
+                data:
+                  id: "1"
+                  name: "GPT-4"
+                  key: "gpt-4"
+                  url: "https://api.openai.com/v1"
+
+  /settings/models/{id}:
+    patch:
+      tags:
+        - AI Models
+      summary: Обновить AI модель
+      description: Обновляет существующую AI модель
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID модели
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateModelRequest'
+            example:
+              id: "1"
+              name: "GPT-4 Turbo"
+              key: "gpt-4-turbo"
+              url: "https://api.openai.com/v1"
+      responses:
+        '200':
+          description: Модель успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateModelResponse'
+
+    delete:
+      tags:
+        - AI Models
+      summary: Удалить AI модель
+      description: Удаляет AI модель по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID модели
+      responses:
+        '200':
+          description: Модель успешно удалена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteModelResponse'
+              example:
+                success: "true"
+
+  # ========================================
+  # SATELLITES (Domains)
+  # ========================================
+  /settings/satellites:
+    get:
+      tags:
+        - Satellites
+      summary: Получить список доменов-сателлитов
+      description: Возвращает список всех доменов-сателлитов
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainsResponse'
+              example:
+                success: "true"
+                data:
+                  - id: "1"
+                    name: "Основной сайт"
+                    domain: "example.com"
+                  - id: "2"
+                    name: "Тестовый домен"
+                    domain: "test.example.com"
+
+    post:
+      tags:
+        - Satellites
+      summary: Создать домен-сателлит
+      description: Создает новый домен-сателлит
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDomainRequest'
+            example:
+              name: "Основной сайт"
+              domain: "example.com"
+      responses:
+        '200':
+          description: Домен успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDomainResponse'
+              example:
+                success: "true"
+                data:
+                  id: "1"
+                  name: "Основной сайт"
+                  domain: "example.com"
+
+  /settings/satellites/{id}:
+    patch:
+      tags:
+        - Satellites
+      summary: Обновить домен-сателлит
+      description: Обновляет существующий домен-сателлит
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID домена
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDomainRequest'
+            example:
+              id: "1"
+              name: "Обновленный домен"
+              domain: "new.example.com"
+      responses:
+        '200':
+          description: Домен успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateDomainResponse'
+
+    delete:
+      tags:
+        - Satellites
+      summary: Удалить домен-сателлит
+      description: Удаляет домен-сателлит по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID домена
+      responses:
+        '200':
+          description: Домен успешно удален
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteDomainResponse'
+              example:
+                success: "true"
+
+  # ========================================
+  # EMPLOYEES
+  # ========================================
+  /settings/employees:
+    get:
+      tags:
+        - Employees
+      summary: Получить список сотрудников
+      description: Возвращает список всех сотрудников
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeesResponse'
+              example:
+                success: "true"
+                data:
+                  - id: "1"
+                    firstName: "Иван"
+                    lastName: "Иванов"
+                    role: "admin"
+                  - id: "2"
+                    firstName: "Петр"
+                    lastName: "Петров"
+                    role: "user"
+
+    post:
+      tags:
+        - Employees
+      summary: Создать сотрудника
+      description: Создает нового сотрудника с паролем
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEmployeeRequest'
+            example:
+              firstName: "Иван"
+              lastName: "Иванов"
+              role: "user"
+              newPassword: "SecurePass123"
+      responses:
+        '200':
+          description: Сотрудник успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateEmployeeResponse'
+              example:
+                success: "true"
+                data:
+                  id: "1"
+                  firstName: "Иван"
+                  lastName: "Иванов"
+                  role: "user"
+
+  /settings/employees/{id}:
+    patch:
+      tags:
+        - Employees
+      summary: Обновить сотрудника
+      description: Обновляет данные сотрудника (опционально пароль)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID сотрудника
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEmployeeRequest'
+            example:
+              id: "1"
+              firstName: "Иван"
+              lastName: "Иванов"
+              role: "admin"
+              newPassword: "NewSecurePass123"
+              confirmPassword: "NewSecurePass123"
+      responses:
+        '200':
+          description: Сотрудник успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateEmployeeResponse'
+
+    delete:
+      tags:
+        - Employees
+      summary: Удалить сотрудника
+      description: Удаляет сотрудника по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID сотрудника
+      responses:
+        '200':
+          description: Сотрудник успешно удален
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteEmployeeResponse'
+              example:
+                success: "true"
+
+  # ========================================
+  # ROLES
+  # ========================================
+  /settings/roles:
+    get:
+      tags:
+        - Roles
+      summary: Получить список ролей
+      description: Возвращает список всех доступных ролей
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolesResponse'
+              example:
+                success: "true"
+                data:
+                  - id: "1"
+                    name: "Администратор"
+                    key: "admin"
+                  - id: "2"
+                    name: "Пользователь"
+                    key: "user"
+                  - id: "3"
+                    name: "Модератор"
+                    key: "moderator"
+
+# ========================================
+# SCHEMAS (Components)
+# ========================================
+components:
+  schemas:
+    # ========================================
+    # USER PROFILE
+    # ========================================
+    UserData:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - excelBaseUrl
+      properties:
+        id:
+          type: string
+          description: ID пользователя
+        firstName:
+          type: string
+          description: Имя
+        lastName:
+          type: string
+          description: Фамилия
+        excelBaseUrl:
+          type: string
+          format: uri
+          description: Базовая ссылка на Excel таблицу
+
+    UserDataResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: "success"
+        data:
+          $ref: '#/components/schemas/UserData'
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          description: Имя
+        lastName:
+          type: string
+          minLength: 2
+          description: Фамилия
+        currentPassword:
+          type: string
+          description: Текущий пароль (если меняется)
+        newPassword:
+          type: string
+          minLength: 8
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)'
+          description: Новый пароль (мин 8 символов, буквы и цифры)
+        excelBaseUrl:
+          type: string
+          format: uri
+          description: Базовая ссылка на Excel
+
+    UpdateProfileResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/UserData'
+
+    # ========================================
+    # TASK SHEET MAPPINGS
+    # ========================================
+    TaskSheetMapping:
+      type: object
+      required:
+        - taskId
+        - taskName
+        - sheetId
+      properties:
+        taskId:
+          type: string
+          description: ID задачи
+        taskName:
+          type: string
+          description: Название задачи
+        sheetId:
+          type: integer
+          description: ID листа Excel
+
+    TaskSheetMappingsResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: "success"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskSheetMapping'
+
+    UpdateTaskSheetMappingsRequest:
+      type: object
+      required:
+        - mappings
+      properties:
+        mappings:
+          type: array
+          items:
+            type: object
+            required:
+              - taskId
+              - sheetId
+            properties:
+              taskId:
+                type: string
+              sheetId:
+                type: integer
+
+    UpdateTaskSheetMappingsResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskSheetMapping'
+
+    # ========================================
+    # DOMAINS
+    # ========================================
+    Domain:
+      type: object
+      required:
+        - id
+        - name
+        - domain
+      properties:
+        id:
+          type: string
+          description: ID домена
+        name:
+          type: string
+          description: Наименование домена
+        domain:
+          type: string
+          pattern: '^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
+          description: Домен
+
+    AvailableDomainsResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          example: "success"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
+
+    DomainsResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
+
+    CreateDomainRequest:
+      type: object
+      required:
+        - name
+        - domain
+      properties:
+        name:
+          type: string
+          minLength: 2
+          description: Наименование домена
+        domain:
+          type: string
+          pattern: '^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
+          description: Домен
+
+    CreateDomainResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          $ref: '#/components/schemas/Domain'
+
+    UpdateDomainRequest:
+      type: object
+      required:
+        - id
+        - name
+        - domain
+      properties:
+        id:
+          type: string
+          description: ID домена
+        name:
+          type: string
+          minLength: 2
+          description: Наименование домена
+        domain:
+          type: string
+          pattern: '^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
+          description: Домен
+
+    UpdateDomainResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          $ref: '#/components/schemas/Domain'
+
+    DeleteDomainResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: string
+          example: "true"
+
+    # ========================================
+    # GOODS
+    # ========================================
+    GoodsData:
+      type: object
+      required:
+        - id
+        - name
+        - baseUrl
+        - satelliteUrl
+        - selectedDomain
+      properties:
+        id:
+          type: string
+          description: ID товара
+        name:
+          type: string
+          description: Название товара
+        description:
+          type: string
+          description: Описание товара (опционально)
+        baseUrl:
+          type: string
+          format: uri
+          description: Базовый URL
+        satelliteUrl:
+          type: string
+          format: uri
+          description: URL сателлита
+        selectedDomain:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
+          description: Выбранные домены
+
+    GoodsDataResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoodsData'
+
+    CreateGoodsRequest:
+      type: object
+      required:
+        - name
+        - baseUrl
+        - satelliteUrl
+        - selectedDomain
+      properties:
+        name:
+          type: string
+          minLength: 2
+          description: Название товара
+        description:
+          type: string
+          description: Описание товара (опционально)
+        baseUrl:
+          type: string
+          format: uri
+          description: Базовый URL
+        satelliteUrl:
+          type: string
+          format: uri
+          description: URL сателлита
+        selectedDomain:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
+
+    CreateGoodsResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          $ref: '#/components/schemas/GoodsData'
+
+    UpdateGoodsRequest:
+      type: object
+      required:
+        - id
+        - name
+        - baseUrl
+        - satelliteUrl
+        - selectedDomain
+      properties:
+        id:
+          type: string
+          description: ID товара
+        name:
+          type: string
+          minLength: 2
+          description: Название товара
+        description:
+          type: string
+          description: Описание товара (опционально)
+        baseUrl:
+          type: string
+          format: uri
+          description: Базовый URL
+        satelliteUrl:
+          type: string
+          format: uri
+          description: URL сателлита
+        selectedDomain:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
+
+    UpdateGoodsResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          $ref: '#/components/schemas/GoodsData'
+
+    DeleteGoodsResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: string
+          example: "true"
+
+    # ========================================
+    # AI MODELS
+    # ========================================
+    ModelData:
+      type: object
+      required:
+        - id
+        - name
+        - key
+        - url
+      properties:
+        id:
+          type: string
+          description: ID модели
+        name:
+          type: string
+          description: Наименование модели
+        key:
+          type: string
+          description: Ключ модели
+        url:
+          type: string
+          format: uri
+          description: URL API модели
+
+    ModelsResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModelData'
+
+    CreateModelRequest:
+      type: object
+      required:
+        - name
+        - key
+        - url
+      properties:
+        name:
+          type: string
+          minLength: 2
+          description: Наименование модели
+        key:
+          type: string
+          minLength: 2
+          description: Ключ модели
+        url:
+          type: string
+          format: uri
+          description: URL API модели
+
+    CreateModelResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          $ref: '#/components/schemas/ModelData'
+
+    UpdateModelRequest:
+      type: object
+      required:
+        - id
+        - name
+        - key
+        - url
+      properties:
+        id:
+          type: string
+          description: ID модели
+        name:
+          type: string
+          minLength: 2
+          description: Наименование модели
+        key:
+          type: string
+          minLength: 2
+          description: Ключ модели
+        url:
+          type: string
+          format: uri
+          description: URL API модели
+
+    UpdateModelResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          $ref: '#/components/schemas/ModelData'
+
+    DeleteModelResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: string
+          example: "true"
+
+    # ========================================
+    # EMPLOYEES
+    # ========================================
+    EmployeeData:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - role
+      properties:
+        id:
+          type: string
+          description: ID сотрудника
+        firstName:
+          type: string
+          description: Имя
+        lastName:
+          type: string
+          description: Фамилия
+        role:
+          type: string
+          description: Роль (admin, user, moderator, etc)
+
+    EmployeesResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeData'
+
+    CreateEmployeeRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - role
+        - newPassword
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          description: Имя
+        lastName:
+          type: string
+          minLength: 2
+          description: Фамилия
+        role:
+          type: string
+          description: Роль сотрудника
+        newPassword:
+          type: string
+          minLength: 8
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)'
+          description: Пароль (мин 8 символов, буквы и цифры)
+
+    CreateEmployeeResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          $ref: '#/components/schemas/EmployeeData'
+
+    UpdateEmployeeRequest:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - role
+      properties:
+        id:
+          type: string
+          description: ID сотрудника
+        firstName:
+          type: string
+          minLength: 2
+          description: Имя
+        lastName:
+          type: string
+          minLength: 2
+          description: Фамилия
+        role:
+          type: string
+          description: Роль сотрудника
+        newPassword:
+          type: string
+          minLength: 8
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)'
+          description: Новый пароль (опционально)
+        confirmPassword:
+          type: string
+          description: Подтверждение пароля (опционально)
+
+    UpdateEmployeeResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          $ref: '#/components/schemas/EmployeeData'
+
+    DeleteEmployeeResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: string
+          example: "true"
+
+    # ========================================
+    # ROLES
+    # ========================================
+    RoleData:
+      type: object
+      required:
+        - id
+        - name
+        - key
+      properties:
+        id:
+          type: string
+          description: ID роли
+        name:
+          type: string
+          description: Название роли (для отображения)
+        key:
+          type: string
+          description: Ключ роли (admin, user, moderator, etc)
+
+    RolesResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: string
+          example: "true"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleData'
+

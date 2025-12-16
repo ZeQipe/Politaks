@@ -1,0 +1,117 @@
+openapi: 3.0.0
+info:
+  title: Politaks AI - Auth API
+  version: 1.0.0
+  description: API endpoints для авторизации
+
+servers:
+  - url: /api
+    description: API Server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    CsrfToken:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+
+paths:
+  /auth/csrf:
+    get:
+      summary: Получить CSRF токен
+      description: Возвращает CSRF токен для использования при логине
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: CSRF токен успешно получен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  csrfToken:
+                    type: string
+                    example: "abc123xyz456"
+        '401':
+          description: Неавторизован (неверный Bearer token)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid bearer token"
+
+  /auth/login:
+    post:
+      summary: Авторизация пользователя
+      description: Авторизация через логин и пароль (query параметры)
+      security:
+        - BearerAuth: []
+        - CsrfToken: []
+      parameters:
+        - in: query
+          name: username
+          required: true
+          schema:
+            type: string
+          description: Логин пользователя
+          example: "admin"
+        - in: query
+          name: password
+          required: true
+          schema:
+            type: string
+            format: password
+          description: Пароль пользователя
+          example: "password123"
+      responses:
+        '200':
+          description: Успешная авторизация
+          headers:
+            Set-Cookie:
+              description: Устанавливает session cookie
+              schema:
+                type: string
+                example: "sessionid=abc123; Path=/; HttpOnly"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Успешная авторизация"
+        '401':
+          description: Неверный логин или пароль
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Неверный логин или пароль"
+        '403':
+          description: Неверный CSRF токен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid CSRF token"
+
