@@ -376,6 +376,7 @@ def generate_excel_content(task_id: str, model_id: str, excel_link: str, user_id
     """
     import threading
     from interface import SheetsAPI
+    from app.users.models import UserAssistant
     
     try:
         # Валидация ассистента по ID
@@ -406,13 +407,30 @@ def generate_excel_content(task_id: str, model_id: str, excel_link: str, user_id
                 "error": f"Неизвестный тип ассистента: '{assistant.key_title}'"
             }
         
+        # Определяем sheet_id: кастомный от пользователя или дефолтный от ассистента
+        sheet_id = assistant.default_sheets_id or 0
+        
+        if user_id:
+            # Проверяем есть ли у пользователя кастомный sheets_id для этого ассистента
+            try:
+                user_assistant = UserAssistant.objects.get(
+                    user_id=user_id,
+                    assistant_id=assistant.id
+                )
+                # Если у пользователя есть кастомный sheets_id - используем его
+                if user_assistant.sheets_id is not None:
+                    sheet_id = user_assistant.sheets_id
+            except UserAssistant.DoesNotExist:
+                # Связи нет - используем дефолтный
+                pass
+        
         # Формируем payload для Sheets API
         # range_from >= 3, range_to = -1 (весь документ) или >= 3
         payload = {
             "llm_model": model.name,
             "link": excel_link,
             "assistant": assistant.key_title,
-            "sheet_id": assistant.default_sheets_id or 0,
+            "sheet_id": sheet_id,
             "user_id": user_id,
             "from_row": range_from,
             "to_row": range_to,
