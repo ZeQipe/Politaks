@@ -44,7 +44,7 @@ async def _save_process_data(record: dict, user_id: str, llm_model: str, assista
     }
 
     async with aiohttp.ClientSession() as session, session.post(f"{DJANGO_API_URL}/api/response/save", json=payload) as resp:
-        if resp.status != 200:
+        if resp.status not in {200, 201}:
             error_text = await resp.text()
             logger.error(f"_save_process_data() - Failed for '{assistant}' row={idx}: {resp.status} - {error_text}")
 
@@ -55,25 +55,23 @@ async def process_google_sheet(user_id: str, llm_model: str, link: str, assistan
     worksheet = spreadsheet.get_worksheet(sheet_id)
 
     wsh_records: list[dict] = worksheet.get_all_records()
-    wsh_records = wsh_records[from_row:to_row] if to_row != -1 else wsh_records[from_row:]
-    # logger.debug(wsh_records)
+    wsh_records = wsh_records[from_row:to_row-1] if to_row != -1 else wsh_records[from_row:]
     headers = worksheet.row_values(1)
     result_col_index = headers.index("Результат") + 1
     result_col_data = worksheet.col_values(result_col_index)
 
     async def handle_row(idx: int, record: dict):
         try:
-            # logger.debug(f"process_google_sheet() - {assistant} - request_sended for row {idx}")
             args = list(record.values())[:-1]
             result = await assistant_func[assistant](llm_model, *args)
             worksheet.update_cell(idx, result_col_index, result)
             await _save_process_data(record, user_id, llm_model, assistant, result, idx)
         except Exception as e:
-            logger.error(f"process_google_sheet().handle_row() - {assistant} - row {idx} - {e}")
+            logger.error(f"Error process_google_sheet().handle_row() - {assistant} - row {idx} - {e}")
 
     tasks_data = [
         (i, record) for i, record in enumerate(wsh_records, from_row+2)
-        if result_col_data[i] and len(str(result_col_data[i])) < 6
+        if (i-1)>=len(result_col_data) or len(str(result_col_data[i-1])) < 6
     ]
 
     batch_size = 3
@@ -85,7 +83,7 @@ async def process_google_sheet(user_id: str, llm_model: str, link: str, assistan
         ]
         await asyncio.gather(*current_tasks)
         if i + batch_size < len(tasks_data):
-            await asyncio.sleep(20)
+            await asyncio.sleep(10)
 
 
 async def process_google_sheets(user_id: str, llm_model: str, link: str, name_sheet: dict[str, int]):
