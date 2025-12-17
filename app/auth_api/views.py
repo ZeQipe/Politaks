@@ -113,10 +113,10 @@ def login_user(request):
 
 
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(["GET"])
 def logout_user(request):
     """
-    POST /auth/logout - Разлогинить пользователя
+    GET /auth/logout - Разлогинить пользователя
     
     Response:
         200: {"success": true, "message": "Вы вышли из системы"}
