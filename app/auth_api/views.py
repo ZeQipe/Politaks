@@ -119,16 +119,18 @@ def logout_user(request):
     GET /auth/logout - Разлогинить пользователя
     
     Response:
-        200: {"success": true, "message": "Вы вышли из системы"}
+        302: Редирект на /login с удалением сессионной куки
     """
-    # Разлогиниваем пользователя
+    from django.shortcuts import redirect
+    
+    # Разлогиниваем пользователя (удаляет сессию на сервере)
     logout(request)
     
-    return JsonResponse(
-        {
-            "success": True,
-            "message": "Вы вышли из системы"
-        },
-        status=200
-    )
+    # Редиректим на страницу логина
+    response = redirect('/login')
+    
+    # Явно удаляем куку sessionid
+    response.delete_cookie('sessionid')
+    
+    return response
 
