@@ -1,10 +1,11 @@
 """
 URL маршруты для Auth API
 
-Роуты согласно OpenAPI спецификации:
+Роуты:
 
 1. GET  /auth/csrf   - Получить CSRF токен
 2. POST /auth/login  - Авторизация пользователя
+3. POST /auth/logout - Разлогинить пользователя
 """
 from django.urls import path
 from . import views
@@ -17,5 +18,8 @@ urlpatterns = [
     
     # Login (2)
     path('login', views.login_user, name='login_user'),
+    
+    # Logout (3)
+    path('logout', views.logout_user, name='logout_user'),
 ]
 

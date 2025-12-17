@@ -4,7 +4,7 @@ Views для Auth API
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 
 from .interface.auth import (
     verify_bearer_token,
@@ -110,4 +110,25 @@ def login_user(request):
     # response.set_cookie('sessionid', request.session.session_key, httponly=True, samesite='Lax')
     
     return response
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def logout_user(request):
+    """
+    POST /auth/logout - Разлогинить пользователя
+    
+    Response:
+        200: {"success": true, "message": "Вы вышли из системы"}
+    """
+    # Разлогиниваем пользователя
+    logout(request)
+    
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "Вы вышли из системы"
+        },
+        status=200
+    )
 
