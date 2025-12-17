@@ -95,11 +95,12 @@ def login_user(request):
     user = result["user"]
     login(request, user)
     
-    # Формируем ответ
+    # Формируем ответ с URL для редиректа
     response = JsonResponse(
         {
             "success": True,
-            "message": result["message"]
+            "message": result["message"],
+            "redirectUrl": "/"
         },
         status=200
     )
