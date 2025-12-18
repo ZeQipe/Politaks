@@ -117,12 +117,16 @@ def update_task_sheet_mappings(user_id: int, mappings: list):
     Args:
         user_id: ID пользователя
         mappings: Список маппингов [{"taskId": "1", "sheetId": 1}, ...]
+                  sheetId - порядковый номер (1-based), в базе сохраняем 0-based
     
     Returns:
         dict: {"success": true, "data": [...]}
     """
     try:
         user = User.objects.get(id=user_id)
+        
+        # Получаем общее количество ассистентов для валидации
+        total_assistants = Assistant.objects.count()
         
         # Обновляем или создаём маппинги
         for mapping in mappings:
@@ -133,13 +137,20 @@ def update_task_sheet_mappings(user_id: int, mappings: list):
                 continue
             
             try:
+                sheet_id_int = int(sheet_id)
+                
+                # Валидация: не меньше 1, не больше количества ассистентов
+                if sheet_id_int < 1 or sheet_id_int > total_assistants:
+                    continue
+                
                 assistant = Assistant.objects.get(id=int(task_id))
                 
                 # Обновляем или создаём UserAssistant
+                # sheetId приходит 1-based, сохраняем 0-based (sheetId - 1)
                 user_assistant, created = UserAssistant.objects.update_or_create(
                     user=user,
                     assistant=assistant,
-                    defaults={"sheets_id": int(sheet_id)}
+                    defaults={"sheets_id": sheet_id_int - 1}
                 )
             except (Assistant.DoesNotExist, ValueError):
                 continue
@@ -160,7 +171,7 @@ def update_task_sheet_mappings(user_id: int, mappings: list):
             data.append({
                 "taskId": str(assistant.id),
                 "taskLabel": assistant.title,
-                "sheetId": sheets_id
+                "sheetId": sheets_id + 1  # В базе 0-based, отдаём 1-based
             })
         
         return {

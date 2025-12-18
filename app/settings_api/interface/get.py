@@ -70,7 +70,7 @@ def get_task_sheet_mappings(user_id: int):
             data.append({
                 "taskId": str(assistant.id),
                 "taskLabel": assistant.title,
-                "sheetId": sheets_id
+                "sheetId": sheets_id + 1  # В базе 0-based, отдаём 1-based (порядковый номер)
             })
         
         return {
