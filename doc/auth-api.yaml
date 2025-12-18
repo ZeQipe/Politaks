@@ -79,7 +79,7 @@ paths:
               description: Устанавливает session cookie
               schema:
                 type: string
-                example: "sessionid=abc123; Path=/; HttpOnly"
+                example: "auth-token=abc123; Path=/; HttpOnly"
           content:
             application/json:
               schema:
@@ -114,4 +114,42 @@ paths:
                   error:
                     type: string
                     example: "Invalid CSRF token"
+
+  /auth/logout:
+    post:
+      summary: Выход из системы
+      description: Завершает сессию пользователя и удаляет session cookie
+      responses:
+        '200':
+          description: Успешный выход из системы
+          headers:
+            Set-Cookie:
+              description: Удаляет session cookie
+              schema:
+                type: string
+                example: "auth-token=; Path=/; HttpOnly; Max-Age=0"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Вы успешно вышли из системы"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ошибка при выходе из системы"
 

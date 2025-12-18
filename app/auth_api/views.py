@@ -113,20 +113,34 @@ def login_user(request):
 
 
 @csrf_exempt
-@require_http_methods(["GET"])
+@require_http_methods(["POST"])
 def logout_user(request):
     """
-    GET /api/auth/logout - Разлогинить и редиректнуть на /login
+    POST /api/auth/logout - Выход из системы
     
-    Использование: window.location.href = '/api/auth/logout'
-    или <a href="/api/auth/logout">Выйти</a>
+    Response:
+        200: {"success": true, "message": "Вы успешно вышли из системы"}
+        500: {"success": false, "message": "Ошибка при выходе из системы"}
     """
-    from django.shortcuts import redirect
-    
-    logout(request)
-    
-    response = redirect('/login')
-    response.delete_cookie('sessionid')
-    
-    return response
+    try:
+        logout(request)
+        
+        response = JsonResponse(
+            {
+                "success": True,
+                "message": "Вы успешно вышли из системы"
+            },
+            status=200
+        )
+        response.delete_cookie('sessionid')
+        
+        return response
+    except Exception:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Ошибка при выходе из системы"
+            },
+            status=500
+        )
 

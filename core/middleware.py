@@ -1,7 +1,7 @@
 """
 Кастомные middleware для Politaks
 """
-from django.shortcuts import redirect
+from django.http import JsonResponse
 from django.contrib.auth import logout
 
 
@@ -11,7 +11,7 @@ class AdminSuperuserMiddleware:
     
     Если пользователь пытается зайти в /admin/, но не является суперюзером:
     1. Разлогиниваем его
-    2. Редиректим на страницу авторизации админ-панели
+    2. Возвращаем 401
     """
     
     def __init__(self, get_response):
@@ -28,8 +28,14 @@ class AdminSuperuserMiddleware:
             if request.user.is_authenticated and not request.user.is_superuser:
                 # Разлогиниваем
                 logout(request)
-                # Редиректим на страницу авторизации админ-панели
-                return redirect('/admin/login/?next=' + request.path)
+                # Возвращаем 401
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Доступ запрещён. Требуются права суперпользователя."
+                    },
+                    status=401
+                )
         
         return self.get_response(request)
 
