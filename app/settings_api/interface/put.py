@@ -159,7 +159,7 @@ def update_task_sheet_mappings(user_id: int, mappings: list):
             
             data.append({
                 "taskId": str(assistant.id),
-                "taskName": assistant.title,
+                "taskLabel": assistant.title,
                 "sheetId": sheets_id
             })
         

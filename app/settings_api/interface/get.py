@@ -69,7 +69,7 @@ def get_task_sheet_mappings(user_id: int):
             
             data.append({
                 "taskId": str(assistant.id),
-                "taskName": assistant.title,
+                "taskLabel": assistant.title,
                 "sheetId": sheets_id
             })
         
