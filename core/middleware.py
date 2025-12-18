@@ -29,13 +29,16 @@ class AdminSuperuserMiddleware:
                 # Разлогиниваем
                 logout(request)
                 # Возвращаем 401
-                return JsonResponse(
+                response = JsonResponse(
                     {
                         "success": False,
                         "error": "Доступ запрещён. Требуются права суперпользователя."
                     },
                     status=401
                 )
+                response.delete_cookie('sessionid')
+                response.delete_cookie('auth-token')
+                return response
         
         return self.get_response(request)
 

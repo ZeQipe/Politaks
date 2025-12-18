@@ -95,7 +95,7 @@ def login_user(request):
     user = result["user"]
     login(request, user)
     
-    # Формируем ответ с URL для редиректа
+    # Формируем ответ
     response = JsonResponse(
         {
             "success": True,
@@ -105,9 +105,14 @@ def login_user(request):
         status=200
     )
     
-    # Cookie устанавливается автоматически Django при login()
-    # Но можно явно установить параметры если нужно:
-    # response.set_cookie('sessionid', request.session.session_key, httponly=True, samesite='Lax')
+    # Устанавливаем auth-token куку для фронта (НЕ HttpOnly - JS должен её видеть)
+    response.set_cookie(
+        'auth-token',
+        'true',
+        httponly=False,
+        samesite='Lax',
+        path='/'
+    )
     
     return response
 
@@ -133,6 +138,7 @@ def logout_user(request):
             status=200
         )
         response.delete_cookie('sessionid')
+        response.delete_cookie('auth-token')
         
         return response
     except Exception:
