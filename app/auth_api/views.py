@@ -116,20 +116,16 @@ def login_user(request):
 @require_http_methods(["GET"])
 def logout_user(request):
     """
-    GET /auth/logout - Разлогинить пользователя
+    GET /api/auth/logout - Разлогинить и редиректнуть на /login
     
-    Response:
-        302: Редирект на /login с удалением сессионной куки
+    Использование: window.location.href = '/api/auth/logout'
+    или <a href="/api/auth/logout">Выйти</a>
     """
     from django.shortcuts import redirect
     
-    # Разлогиниваем пользователя (удаляет сессию на сервере)
     logout(request)
     
-    # Редиректим на страницу логина
     response = redirect('/login')
-    
-    # Явно удаляем куку sessionid
     response.delete_cookie('sessionid')
     
     return response

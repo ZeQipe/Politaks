@@ -5,7 +5,7 @@ URL маршруты для Auth API
 
 1. GET  /auth/csrf   - Получить CSRF токен
 2. POST /auth/login  - Авторизация пользователя
-3. GET  /auth/logout - Разлогинить пользователя
+3. POST /auth/logout - Разлогинить пользователя
 """
 from django.urls import path
 from . import views
