@@ -41,14 +41,21 @@ def decrypt_api_key(encrypted_key: str) -> str:
         encrypted_key: Зашифрованная строка
     
     Returns:
-        Оригинальный API ключ
+        Оригинальный API ключ или маскированная строка при ошибке
     """
     if not encrypted_key:
         return ""
     
-    fernet = Fernet(get_encryption_key())
-    decrypted = fernet.decrypt(encrypted_key.encode())
-    return decrypted.decode()
+    try:
+        fernet = Fernet(get_encryption_key())
+        decrypted = fernet.decrypt(encrypted_key.encode())
+        return decrypted.decode()
+    except Exception:
+        # Если не удалось расшифровать - возвращаем маскированную строку
+        # (данные не зашифрованы или ключ изменился)
+        if len(encrypted_key) > 8:
+            return encrypted_key[:4] + "****" + encrypted_key[-4:]
+        return "****"
 
 
 def generate_encryption_key() -> str:
