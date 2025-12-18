@@ -1,10 +1,43 @@
+from django import forms
 from django.contrib import admin
 from .models import Models, Assistant, Inputer, AssistantInputer
+
+
+class ModelsAdminForm(forms.ModelForm):
+    """Форма для редактирования AI моделей с шифрованием ключа"""
+    
+    api_key = forms.CharField(
+        label='API ключ',
+        widget=forms.TextInput(attrs={'style': 'width: 400px;'}),
+        required=False,
+        help_text='Введите API ключ. При сохранении он будет зашифрован.'
+    )
+    
+    class Meta:
+        model = Models
+        fields = ['name', 'url', 'is_active']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # При редактировании показываем расшифрованный ключ
+        if self.instance and self.instance.pk and self.instance.encrypted_key:
+            self.fields['api_key'].initial = self.instance.get_key()
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        api_key = self.cleaned_data.get('api_key')
+        if api_key:
+            instance.set_key(api_key)  # Шифруем ключ
+        if commit:
+            instance.save()
+        return instance
 
 
 @admin.register(Models)
 class ModelsAdmin(admin.ModelAdmin):
     """Админ-панель для AI моделей"""
+    
+    form = ModelsAdminForm
     
     list_display = (
         'id',
@@ -29,7 +62,7 @@ class ModelsAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('name', 'url', 'encrypted_key')
+            'fields': ('name', 'url', 'api_key')
         }),
         ('Настройки', {
             'fields': ('is_active',)
