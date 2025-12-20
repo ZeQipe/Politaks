@@ -1,5 +1,7 @@
+
 import httpx
-from .settings import logger, DJANGO_API_URL
+
+from .settings import DJANGO_API_URL, logger
 
 
 async def get_related_products(domain: str, products_name: list[str]) -> dict:

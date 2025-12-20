@@ -13,7 +13,7 @@ class ProcessGoogleSheetRequest(BaseModel):
     llm_model: str
     link: str
     assistant: str
-    sheet_id: int
+    sheet_id: int = Field(ge=0)
     from_row: int = Field(default=3, ge=3)
     to_row: int = Field(default=-1, ge=-1)
 
