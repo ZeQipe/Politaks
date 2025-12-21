@@ -1,6 +1,5 @@
 # Данные доменов сателлитов
 # Формат: {title: domen}
-
 SATELLITES = {
     "Архангельск": "https://arkhangelsk-politaks.ru",
     "Астрахань": "https://astrakhan-politaks.ru",
@@ -37,7 +36,6 @@ SATELLITES = {
     "Тюмень": "https://tyumen-politaks.ru",
     "Уфа": "https://ufa-politaks.ru",
     "Челябинск": "https://chelyabinsk-politaks.ru",
-    "ХМАО": "https://hmao-politaks.ru",
+    "Ханты-Мансийский автономный округ": "https://hmao-politaks.ru",
     "Якутск": "https://yakutsk-politaks.ru",
 }
-

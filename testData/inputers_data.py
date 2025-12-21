@@ -13,7 +13,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "seo_high_freq": {
-        "label": "SEO ВЧ:",
+        "label": "SEO ВЧ",
         "type": "multiline",
         "size": "medium",
         "placement": "Введите высокочастотные тэги...",
@@ -22,7 +22,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "seo_medium_freq": {
-        "label": "SEO СЧ:",
+        "label": "SEO СЧ",
         "type": "multiline",
         "size": "medium",
         "placement": "Введите среднечастотные тэги...",
@@ -31,7 +31,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "seo_low_freq": {
-        "label": "SEO НЧ:",
+        "label": "SEO НЧ",
         "type": "multiline",
         "size": "medium",
         "placement": "Введите низкочастотные тэги...",
@@ -40,7 +40,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "description": {
-        "label": "Описание:",
+        "label": "Описание",
         "type": "multiline",
         "size": "large",
         "placement": "Введите описание...",
@@ -49,7 +49,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "usage": {
-        "label": "Применение:",
+        "label": "Применение",
         "type": "multiline",
         "size": "large",
         "placement": "Укажите применение...",
@@ -58,7 +58,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "features": {
-        "label": "Свойства:",
+        "label": "Свойства",
         "type": "multiline",
         "size": "large",
         "placement": "Укажите свойства...",
@@ -67,7 +67,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "place_name": {
-        "label": "Название места/объекта:",
+        "label": "Название места/объекта",
         "type": "single",
         "size": None,
         "placement": "Введите наименование объекта...",
@@ -76,7 +76,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "location": {
-        "label": "Расположение:",
+        "label": "Расположение",
         "type": "single",
         "size": None,
         "placement": "Укажите расположение...",
@@ -85,7 +85,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "background_info": {
-        "label": "Дополнительная информация:",
+        "label": "Дополнительная информация",
         "type": "multiline",
         "size": "medium",
         "placement": "Введите дополнительную информацию",
@@ -94,7 +94,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "products_name": {
-        "label": "Использованные товары:",
+        "label": "Использованные товары",
         "type": "select",
         "size": None,
         "placement": "Выберите товары",
@@ -103,7 +103,7 @@ INPUTERS_DATA = {
         "multi_select": True,
     },
     "descriptions": {
-        "label": "Описания:",
+        "label": "Описания",
         "type": "multiline",
         "size": "large",
         "placement": "Введите описания...",
@@ -139,7 +139,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "article": {
-        "label": "Статья:",
+        "label": "Статья",
         "type": "multiline",
         "size": "large",
         "placement": "Введите статью...",
@@ -148,7 +148,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "tech_instruction": {
-        "label": "Инструкция:",
+        "label": "Инструкция",
         "type": "multiline",
         "size": "large",
         "placement": "Введите инструкцию...",
@@ -157,7 +157,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "category_description": {
-        "label": "Описание категории:",
+        "label": "Описание категории",
         "type": "multiline",
         "size": "large",
         "placement": "Введите описание категории...",
@@ -166,7 +166,7 @@ INPUTERS_DATA = {
         "multi_select": False,
     },
     "topic": {
-        "label": "Тематика:",
+        "label": "Тематика",
         "type": "multiline",
         "size": "medium",
         "placement": "Введите тематику...",
