@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from .interface.get import get_related_products_by_domain, get_product_link_by_domain
-from .interface.set import populate_products_from_data, populate_assistants_from_data
+from .interface.set import populate_products_from_data, populate_assistants_from_data, populate_products_from_csv, populate_base_config
 import json
 
 # Пароль для доступа к роуту заполнения БД
@@ -194,6 +194,132 @@ def populate_database(request):
             },
             'errors': all_errors if all_errors else None
         }, status=200 if overall_success else 207)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Внутренняя ошибка сервера: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def populate_from_csv(request):
+    """
+    Заполнение БД данными из CSV файлов (testData/csv/)
+    
+    Query параметры:
+        - password: str (обязательный, должен быть "ai_zeqipe")
+    
+    Возвращает:
+        JSON с информацией о результате заполнения
+    """
+    try:
+        # Получаем пароль из query параметров
+        password = request.GET.get('password') or request.POST.get('password')
+        
+        # Проверка пароля
+        if not password:
+            return JsonResponse({
+                'success': False,
+                'error': 'Параметр password обязателен'
+            }, status=400)
+        
+        if password != POPULATE_PASSWORD:
+            return JsonResponse({
+                'success': False,
+                'error': 'Неверный пароль'
+            }, status=403)
+        
+        # Запускаем заполнение БД из CSV
+        csv_result = populate_products_from_csv()
+        
+        return JsonResponse({
+            'success': csv_result['success'],
+            'message': 'Заполнение БД из CSV завершено',
+            'statistics': {
+                'products': {
+                    'created': csv_result['created_products'],
+                    'skipped': csv_result['skipped_products'],
+                },
+                'satellite_links_added': csv_result['satellite_links_added'],
+                'relations': {
+                    'created': csv_result['created_relations'],
+                    'skipped': csv_result['skipped_relations'],
+                },
+            },
+            'errors': csv_result['errors'] if csv_result['errors'] else None
+        }, status=200 if csv_result['success'] else 207)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Внутренняя ошибка сервера: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def populate_config(request):
+    """
+    Заполнение БД базовой конфигурацией:
+    - Домены сателлитов
+    - AI модель GPT-4o
+    - Инпутеры
+    - Ассистенты
+    - Связи ассистентов с инпутерами
+    
+    Query параметры:
+        - password: str (обязательный, должен быть "ai_zeqipe")
+    
+    Возвращает:
+        JSON с информацией о результате заполнения
+    """
+    try:
+        # Получаем пароль из query параметров
+        password = request.GET.get('password') or request.POST.get('password')
+        
+        # Проверка пароля
+        if not password:
+            return JsonResponse({
+                'success': False,
+                'error': 'Параметр password обязателен'
+            }, status=400)
+        
+        if password != POPULATE_PASSWORD:
+            return JsonResponse({
+                'success': False,
+                'error': 'Неверный пароль'
+            }, status=403)
+        
+        # Запускаем заполнение базовой конфигурации
+        config_result = populate_base_config()
+        
+        return JsonResponse({
+            'success': config_result['success'],
+            'message': 'Заполнение базовой конфигурации завершено',
+            'statistics': {
+                'model': {
+                    'created': config_result['created_model'],
+                },
+                'satellites': {
+                    'created': config_result['created_satellites'],
+                    'skipped': config_result['skipped_satellites'],
+                },
+                'inputers': {
+                    'created': config_result['created_inputers'],
+                    'skipped': config_result['skipped_inputers'],
+                },
+                'assistants': {
+                    'created': config_result['created_assistants'],
+                    'skipped': config_result['skipped_assistants'],
+                },
+                'assistant_inputer_links': {
+                    'created': config_result['created_assistant_inputer_links'],
+                },
+            },
+            'errors': config_result['errors'] if config_result['errors'] else None
+        }, status=200 if config_result['success'] else 207)
         
     except Exception as e:
         return JsonResponse({

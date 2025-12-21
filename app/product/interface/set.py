@@ -10,6 +10,140 @@ from django.utils import timezone
 from ..models import Products, List, Satellite
 from app.users.models import User
 from app.config.models import Models, Assistant, Inputer, AssistantInputer
+from .csv_parser import parse_products_csv, parse_relations_csv
+
+
+def populate_base_config():
+    """
+    Заполняет БД базовой конфигурацией:
+    1. Домены сателлитов
+    2. AI модель GPT-4o
+    3. Инпутеры
+    4. Ассистенты
+    5. Связи ассистентов с инпутерами
+    
+    Возвращает:
+        dict: статистика заполнения
+    """
+    from testData.satellites_data import SATELLITES
+    from testData.inputers_data import INPUTERS_DATA, ASSISTANT_INPUTERS
+    from testData.assistants_data import ASSISTANTS_DATA
+    
+    result = {
+        'success': True,
+        'created_model': False,
+        'created_satellites': 0,
+        'skipped_satellites': 0,
+        'created_inputers': 0,
+        'skipped_inputers': 0,
+        'created_assistants': 0,
+        'skipped_assistants': 0,
+        'created_assistant_inputer_links': 0,
+        'errors': []
+    }
+    
+    # ========== 1. Создаём AI модель ==========
+    try:
+        existing_model = Models.objects.filter(name='GPT-4o').first()
+        if not existing_model:
+            openai_key = os.environ.get('OPENAI_API_KEY', '')
+            if openai_key:
+                model = Models(
+                    name='GPT-4o',
+                    url='https://api.openai.com/v1/chat/completions',
+                    is_active=True
+                )
+                model.set_key(openai_key)
+                model.save()
+                result['created_model'] = True
+            else:
+                result['errors'].append("OPENAI_API_KEY не найден в переменных окружения")
+    except Exception as e:
+        result['errors'].append(f"Ошибка создания AI модели: {str(e)}")
+    
+    # ========== 2. Создаём сателлиты ==========
+    for title, domen in SATELLITES.items():
+        try:
+            existing = Satellite.objects.filter(domen=domen).first()
+            if existing:
+                result['skipped_satellites'] += 1
+                continue
+            
+            Satellite.objects.create(title=title, domen=domen)
+            result['created_satellites'] += 1
+            
+        except Exception as e:
+            result['errors'].append(f"Ошибка создания сателлита '{title}': {str(e)}")
+    
+    # ========== 3. Создаём инпутеры ==========
+    for name, data in INPUTERS_DATA.items():
+        try:
+            existing = Inputer.objects.filter(name=name).first()
+            if existing:
+                result['skipped_inputers'] += 1
+                continue
+            
+            Inputer.objects.create(
+                name=name,
+                label=data['label'],
+                type=data['type'],
+                size=data['size'],
+                placement=data['placement'],
+                type_select=data['type_select'],
+                select_search=data['select_search'],
+                multi_select=data['multi_select'],
+            )
+            result['created_inputers'] += 1
+            
+        except Exception as e:
+            result['errors'].append(f"Ошибка создания инпутера '{name}': {str(e)}")
+    
+    # ========== 4. Создаём ассистентов ==========
+    for key_title, data in ASSISTANTS_DATA.items():
+        try:
+            existing = Assistant.objects.filter(key_title=key_title).first()
+            if existing:
+                result['skipped_assistants'] += 1
+                continue
+            
+            assistant = Assistant.objects.create(
+                key_title=key_title,
+                title=data['title'],
+                instruction=data['instruction'],
+                default_sheets_id=data['default_sheets_id'],
+                maks_token=None,
+                temperatures=None
+            )
+            result['created_assistants'] += 1
+            
+            # ========== 5. Создаём связи с инпутерами ==========
+            inputer_names = ASSISTANT_INPUTERS.get(key_title, [])
+            for order, inputer_name in enumerate(inputer_names):
+                try:
+                    inputer = Inputer.objects.filter(name=inputer_name).first()
+                    if inputer:
+                        existing_link = AssistantInputer.objects.filter(
+                            assistant=assistant,
+                            inputer=inputer
+                        ).first()
+                        if not existing_link:
+                            AssistantInputer.objects.create(
+                                assistant=assistant,
+                                inputer=inputer,
+                                required='required',
+                                order=order
+                            )
+                            result['created_assistant_inputer_links'] += 1
+                except Exception as e:
+                    result['errors'].append(f"Ошибка связи '{key_title}' - '{inputer_name}': {str(e)}")
+            
+        except Exception as e:
+            result['errors'].append(f"Ошибка создания ассистента '{key_title}': {str(e)}")
+    
+    if result['errors']:
+        result['success'] = len(result['errors']) < 10
+    
+    return result
 
 
 def extract_path_from_url(url):
@@ -341,5 +475,135 @@ def populate_assistants_from_data():
     
     if result['errors']:
         result['success'] = len(result['errors']) < 5
+    
+    return result
+
+
+def populate_products_from_csv():
+    """
+    Заполняет БД данными из CSV файлов (testData/csv/)
+    
+    Порядок:
+    1. Парсит product.csv и создаёт товары
+    2. Если у товара есть satelitLink - привязывает все существующие сателлиты
+    3. Парсит link_product.csv и создаёт связи между товарами
+    
+    Возвращает:
+        dict: {
+            'success': bool,
+            'created_products': int,
+            'skipped_products': int,
+            'created_relations': int,
+            'skipped_relations': int,
+            'errors': list
+        }
+    """
+    result = {
+        'success': True,
+        'created_products': 0,
+        'skipped_products': 0,
+        'satellite_links_added': 0,
+        'created_relations': 0,
+        'skipped_relations': 0,
+        'errors': []
+    }
+    
+    # Получаем системного пользователя
+    system_user = get_or_create_system_user()
+    
+    # Получаем все существующие сателлиты
+    all_satellites = list(Satellite.objects.all())
+    
+    # ========== 1. Создаём продукты из CSV ==========
+    products_data = parse_products_csv()
+    products_cache = {}  # title -> product
+    
+    for product_data in products_data:
+        title = product_data['title']
+        base_link = product_data['baseLink']
+        satelit_link = product_data['satelitLink']
+        
+        try:
+            # Проверяем, существует ли уже
+            existing = Products.objects.filter(title=title).first()
+            if existing:
+                products_cache[title] = existing
+                result['skipped_products'] += 1
+                continue
+            
+            # Создаём продукт
+            product = Products.objects.create(
+                title=title,
+                baseLink=base_link,
+                satelitLink=satelit_link if satelit_link else '',
+                description='',
+                created_by=system_user
+            )
+            products_cache[title] = product
+            result['created_products'] += 1
+            
+            # Если есть satelitLink - привязываем все сателлиты
+            if satelit_link and all_satellites:
+                product.satelitDomens.add(*all_satellites)
+                result['satellite_links_added'] += len(all_satellites)
+            
+        except Exception as e:
+            result['errors'].append(f"Ошибка создания продукта '{title}': {str(e)}")
+    
+    # ========== 2. Создаём связи из CSV ==========
+    relations_data = parse_relations_csv()
+    
+    for relation_data in relations_data:
+        main_name = relation_data['main_name']
+        relation_name = relation_data['relation_name']
+        description = relation_data['description']
+        
+        try:
+            # Ищем основной продукт
+            main_product = products_cache.get(main_name)
+            if not main_product:
+                main_product = Products.objects.filter(title=main_name).first()
+            
+            if not main_product:
+                # Пропускаем - товар не найден
+                result['skipped_relations'] += 1
+                continue
+            
+            # Ищем связанный продукт
+            related_product = products_cache.get(relation_name)
+            if not related_product:
+                related_product = Products.objects.filter(title=relation_name).first()
+            
+            if not related_product:
+                # Пропускаем - связанный товар не найден
+                result['skipped_relations'] += 1
+                continue
+            
+            # Проверяем, существует ли связь
+            existing_relation = List.objects.filter(
+                product=main_product,
+                related_product=related_product
+            ).first()
+            
+            if existing_relation:
+                result['skipped_relations'] += 1
+                continue
+            
+            # Создаём связь
+            List.objects.create(
+                product=main_product,
+                related_product=related_product,
+                description=description
+            )
+            result['created_relations'] += 1
+            
+        except Exception as e:
+            result['errors'].append(
+                f"Ошибка создания связи '{main_name}' -> '{relation_name}': {str(e)}"
+            )
+            result['skipped_relations'] += 1
+    
+    if result['errors']:
+        result['success'] = len(result['errors']) < 10  # Частичный успех если мало ошибок
     
     return result

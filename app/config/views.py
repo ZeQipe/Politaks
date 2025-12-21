@@ -167,13 +167,14 @@ def generate(request):
     fields = data.get('fields', [])
     
     # Валидация обязательных параметров
-    if not task_id:
+    # "_all" означает "все" - для генерации это недопустимо, нужен конкретный выбор
+    if not task_id or task_id == '_all':
         return JsonResponse({
             'success': False,
             'error': 'Параметр filters.taskId обязателен'
         }, status=400)
     
-    if not model_id:
+    if not model_id or model_id == '_all':
         return JsonResponse({
             'success': False,
             'error': 'Параметр filters.modelId обязателен'
@@ -268,13 +269,14 @@ def generate_excel(request):
         range_to = -1
     
     # Валидация обязательных параметров
-    if not task_id:
+    # "_all" означает "все" - для генерации это недопустимо, нужен конкретный выбор
+    if not task_id or task_id == '_all':
         return JsonResponse({
             'success': False,
             'error': 'Параметр filters.taskId обязателен'
         }, status=400)
     
-    if not model_id:
+    if not model_id or model_id == '_all':
         return JsonResponse({
             'success': False,
             'error': 'Параметр filters.modelId обязателен'

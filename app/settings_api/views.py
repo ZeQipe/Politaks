@@ -536,3 +536,23 @@ def roles_list(request):
         return JsonResponse(result, status=200)
     else:
         return JsonResponse(result, status=500)
+
+
+# ========================================
+# EXCEL LINK
+# ========================================
+
+@require_http_methods(["GET"])
+@login_required_api
+def excel_link(request):
+    """
+    GET /settings/link - Получить базовую Excel ссылку из профиля
+    
+    Авторизация: требуется (по сессии)
+    """
+    link = request.user.default_excel_url or ""
+    
+    return JsonResponse({
+        "success": "true",
+        "link": link
+    }, status=200)

@@ -56,7 +56,7 @@ def _build_filters_response(label_placement: str, only_active: bool, only_with_h
             "data": {
                 "tasks": {
                     "items": tasks_items,
-                    "label": "Задача",
+                    "label": "Ассистенты",
                     "labelPlacement": label_placement
                 },
                 "models": {
@@ -309,7 +309,8 @@ def get_history(count: int = 10, offset: int = 0, task_id: str = None, model_id:
         queryset = Response.objects.all().order_by('-createAt')
         
         # Фильтрация по task (Assistant)
-        if task_id:
+        # "_all" означает "все записи" - не применяем фильтр
+        if task_id and task_id != '_all':
             try:
                 assistant = Assistant.objects.get(id=task_id)
                 queryset = queryset.filter(assistant=assistant.title)
@@ -317,7 +318,8 @@ def get_history(count: int = 10, offset: int = 0, task_id: str = None, model_id:
                 pass
         
         # Фильтрация по model
-        if model_id:
+        # "_all" означает "все записи" - не применяем фильтр
+        if model_id and model_id != '_all':
             try:
                 model = Models.objects.get(id=model_id)
                 queryset = queryset.filter(model=model.name)
@@ -325,7 +327,8 @@ def get_history(count: int = 10, offset: int = 0, task_id: str = None, model_id:
                 pass
         
         # Фильтрация по domain
-        if domain_id:
+        # "_all" означает "все записи" - не применяем фильтр
+        if domain_id and domain_id != '_all':
             if domain_id == 'main':
                 queryset = queryset.filter(domen='main')
             else:

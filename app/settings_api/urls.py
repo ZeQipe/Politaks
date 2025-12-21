@@ -75,5 +75,8 @@ urlpatterns = [
     
     # Roles (22)
     path('roles', views.roles_list, name='roles_list'),
+    
+    # Excel Link (23)
+    path('link', views.excel_link, name='excel_link'),
 ]
 
