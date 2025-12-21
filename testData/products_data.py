@@ -1,16 +1,9 @@
 # Тестовые данные для заполнения БД продуктами
 
 # Список сателлит (доменов)
-# Формат: {title: domen}
+# Формат: {"title": "domen"}
 SATELLITES = {
     "Санкт-Петербург": "https://spb-politaks.ru/",
-    "Москва": "https://msk-politaks.ru/",
-    "Новосибирск": "https://nsk-politaks.ru/",
-    "Екатеринбург": "https://ekb-politaks.ru/",
-    "Казань": "https://kzn-politaks.ru/",
-    "Нижний Новгород": "https://nnov-politaks.ru/",
-    "Краснодар": "https://krd-politaks.ru/",
-    "Ростов-на-Дону": "https://rnd-politaks.ru/",
 }
 
 # Основные товары (только те, у которых есть связи)
