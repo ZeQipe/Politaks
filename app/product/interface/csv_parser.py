@@ -30,6 +30,23 @@ def check_csv_files():
     result['relations_csv']['path'] = relations_path
     result['relations_csv']['exists'] = os.path.exists(relations_path)
     
+    # Диагностика: размер файлов и первые строки
+    if result['products_csv']['exists']:
+        try:
+            result['products_csv']['size'] = os.path.getsize(products_path)
+            with open(products_path, 'r', encoding='utf-8-sig') as f:
+                result['products_csv']['first_lines'] = [f.readline().strip() for _ in range(3)]
+        except Exception as e:
+            result['products_csv']['read_error'] = str(e)
+    
+    if result['relations_csv']['exists']:
+        try:
+            result['relations_csv']['size'] = os.path.getsize(relations_path)
+            with open(relations_path, 'r', encoding='utf-8-sig') as f:
+                result['relations_csv']['first_lines'] = [f.readline().strip() for _ in range(3)]
+        except Exception as e:
+            result['relations_csv']['read_error'] = str(e)
+    
     return result
 
 
@@ -49,7 +66,8 @@ def parse_products_csv():
     csv_path = get_csv_path('product.csv')
     
     try:
-        with open(csv_path, 'r', encoding='utf-8') as file:
+        # utf-8-sig обрабатывает BOM автоматически
+        with open(csv_path, 'r', encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
             
             for row in reader:
@@ -69,7 +87,9 @@ def parse_products_csv():
     
     except FileNotFoundError:
         return []
-    except Exception:
+    except Exception as e:
+        # Логируем ошибку для отладки
+        print(f"CSV parse error (products): {e}")
         return []
     
     return products
@@ -92,7 +112,8 @@ def parse_relations_csv():
     current_main_name = None
     
     try:
-        with open(csv_path, 'r', encoding='utf-8') as file:
+        # utf-8-sig обрабатывает BOM автоматически
+        with open(csv_path, 'r', encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
             
             for row in reader:
@@ -120,7 +141,9 @@ def parse_relations_csv():
     
     except FileNotFoundError:
         return []
-    except Exception:
+    except Exception as e:
+        # Логируем ошибку для отладки
+        print(f"CSV parse error (relations): {e}")
         return []
     
     return relations
