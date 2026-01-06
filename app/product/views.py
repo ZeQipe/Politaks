@@ -237,6 +237,11 @@ def populate_from_csv(request):
         return JsonResponse({
             'success': csv_result['success'],
             'message': 'Заполнение БД из CSV завершено',
+            'csv_files': csv_result.get('csv_files'),
+            'parsed': {
+                'products_from_csv': csv_result.get('products_parsed', 0),
+                'relations_from_csv': csv_result.get('relations_parsed', 0),
+            },
             'statistics': {
                 'products': {
                     'created': csv_result['created_products'],

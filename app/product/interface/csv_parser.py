@@ -9,7 +9,28 @@ from django.conf import settings
 
 def get_csv_path(filename):
     """Получает полный путь к CSV файлу"""
-    return os.path.join(settings.BASE_DIR, 'testData', 'csv', filename)
+    path = os.path.join(settings.BASE_DIR, 'testData', 'csv', filename)
+    return path
+
+
+def check_csv_files():
+    """Проверяет наличие CSV файлов и возвращает информацию"""
+    result = {
+        'base_dir': str(settings.BASE_DIR),
+        'products_csv': {},
+        'relations_csv': {}
+    }
+    
+    products_path = get_csv_path('product.csv')
+    relations_path = get_csv_path('link_product.csv')
+    
+    result['products_csv']['path'] = products_path
+    result['products_csv']['exists'] = os.path.exists(products_path)
+    
+    result['relations_csv']['path'] = relations_path
+    result['relations_csv']['exists'] = os.path.exists(relations_path)
+    
+    return result
 
 
 def parse_products_csv():

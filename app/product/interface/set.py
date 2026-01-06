@@ -10,7 +10,7 @@ from django.utils import timezone
 from ..models import Products, List, Satellite
 from app.users.models import User
 from app.config.models import Models, Assistant, Inputer, AssistantInputer
-from .csv_parser import parse_products_csv, parse_relations_csv
+from .csv_parser import parse_products_csv, parse_relations_csv, check_csv_files
 
 
 def populate_base_config():
@@ -498,8 +498,14 @@ def populate_products_from_csv():
             'errors': list
         }
     """
+    # Проверяем наличие файлов
+    csv_check = check_csv_files()
+    
     result = {
         'success': True,
+        'csv_files': csv_check,
+        'products_parsed': 0,
+        'relations_parsed': 0,
         'created_products': 0,
         'skipped_products': 0,
         'satellite_links_added': 0,
@@ -507,6 +513,12 @@ def populate_products_from_csv():
         'skipped_relations': 0,
         'errors': []
     }
+    
+    # Проверка файлов
+    if not csv_check['products_csv']['exists']:
+        result['errors'].append(f"Файл product.csv не найден: {csv_check['products_csv']['path']}")
+    if not csv_check['relations_csv']['exists']:
+        result['errors'].append(f"Файл link_product.csv не найден: {csv_check['relations_csv']['path']}")
     
     # Получаем системного пользователя
     system_user = get_or_create_system_user()
@@ -516,6 +528,7 @@ def populate_products_from_csv():
     
     # ========== 1. Создаём продукты из CSV ==========
     products_data = parse_products_csv()
+    result['products_parsed'] = len(products_data)
     products_cache = {}  # title -> product
     
     for product_data in products_data:
@@ -552,6 +565,7 @@ def populate_products_from_csv():
     
     # ========== 2. Создаём связи из CSV ==========
     relations_data = parse_relations_csv()
+    result['relations_parsed'] = len(relations_data)
     
     for relation_data in relations_data:
         main_name = relation_data['main_name']
