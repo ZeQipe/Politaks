@@ -71,9 +71,19 @@ def parse_products_csv():
             reader = csv.DictReader(file)
             
             for row in reader:
-                name = row.get('name', '').strip().strip('"')
-                main_link = row.get('main_link', '').strip()
-                sub_link = row.get('sub_link', '').strip()
+                # Поддержка и английских, и русских названий колонок
+                name = (
+                    row.get('name', '') or 
+                    row.get('Название категории (по заголовку h1)', '')
+                ).strip().strip('"')
+                main_link = (
+                    row.get('main_link', '') or 
+                    row.get('Ссылка на категорию (основной сайт)', '')
+                ).strip()
+                sub_link = (
+                    row.get('sub_link', '') or 
+                    row.get('Ссылка на категорию (региональный сайт)', '')
+                ).strip()
                 
                 # Пропускаем строки без названия
                 if not name:
@@ -117,9 +127,19 @@ def parse_relations_csv():
             reader = csv.DictReader(file)
             
             for row in reader:
-                main_name = row.get('main_name', '').strip()
-                relation_name = row.get('relation_name', '').strip()
-                description = row.get('relation_description', '').strip()
+                # Поддержка и английских, и русских названий колонок
+                main_name = (
+                    row.get('main_name', '') or 
+                    row.get('Название основного товара', '')
+                ).strip()
+                relation_name = (
+                    row.get('relation_name', '') or 
+                    row.get('Название связанного товара', '')
+                ).strip()
+                description = (
+                    row.get('relation_description', '') or 
+                    row.get('Как связано друг с другом', '')
+                ).strip()
                 
                 # Пропускаем строки без связанного товара
                 if not relation_name:
