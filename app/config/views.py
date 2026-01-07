@@ -34,15 +34,20 @@ def history_filters(request):
     GET /api/history/filters
     Фильтры для страницы истории
     
+    Возвращает: tasks, models, domains, creators, sources
+    
     Авторизация: требуется (по сессии)
     """
     result = get_filters_for_history()
     
     if result['success']:
-        return JsonResponse(result['data'], status=200)
+        return JsonResponse({
+            'status': 'success',
+            'data': result['data']
+        }, status=200)
     else:
         return JsonResponse({
-            'success': False,
+            'status': 'error',
             'error': result['error']
         }, status=500)
 
@@ -51,7 +56,7 @@ def history_filters(request):
 @login_required_api
 def history(request):
     """
-    GET /api/history?count=10&offset=0&taskId=...&modelId=...&domainId=...
+    GET /api/history?taskId=...&modelId=...&domainId=...&creatorId=...&sourceId=...&count=10&offset=0
     Получение истории генераций
     
     Авторизация: требуется (по сессии)
@@ -62,6 +67,8 @@ def history(request):
     task_id = request.GET.get('taskId')
     model_id = request.GET.get('modelId')
     domain_id = request.GET.get('domainId')
+    creator_id = request.GET.get('creatorId')
+    source_id = request.GET.get('sourceId')
     
     # Преобразуем count и offset в int
     try:
@@ -79,7 +86,9 @@ def history(request):
         offset=offset,
         task_id=task_id,
         model_id=model_id,
-        domain_id=domain_id
+        domain_id=domain_id,
+        creator_id=creator_id,
+        source_id=source_id
     )
     
     if result['success']:

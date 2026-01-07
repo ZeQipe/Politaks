@@ -23,13 +23,10 @@ def get_filters_for_generation():
 def get_filters_for_history():
     """
     Получение фильтров для страницы истории
-    Только записи с историей в Response, labelPlacement = 'top'
+    Возвращает 5 фильтров: tasks, models, domains, creators, sources
+    labelPlacement = 'top'
     """
-    return _build_filters_response(
-        label_placement='top',
-        only_active=False,
-        only_with_history=True
-    )
+    return _build_history_filters_response()
 
 
 def _build_filters_response(label_placement: str, only_active: bool, only_with_history: bool):
@@ -153,6 +150,100 @@ def _get_domains_items(only_active: bool, only_with_history: bool):
         })
     
     return items
+
+
+def _get_creators_items():
+    """Получение списка создателей из истории"""
+    from app.users.models import User
+    
+    used_creators = Response.objects.values_list('user', flat=True).distinct()
+    users = User.objects.filter(login__in=used_creators).order_by('id')
+    
+    items = []
+    for i, user in enumerate(users):
+        items.append({
+            "id": user.login,
+            "label": f"{user.firstName} {user.lastName}".strip() or user.login,
+            "value": user.login,
+            "default": i == 0
+        })
+    
+    return items
+
+
+def _get_sources_items():
+    """Получение списка источников из истории"""
+    used_sources = Response.objects.values_list('source', flat=True).distinct()
+    
+    source_labels = {
+        'manual': 'Ручной ввод',
+        'excel': 'Из Excel'
+    }
+    
+    items = []
+    for i, source in enumerate(used_sources):
+        if source:
+            items.append({
+                "id": source,
+                "label": source_labels.get(source, source),
+                "value": source,
+                "default": i == 0
+            })
+    
+    return items
+
+
+def _build_history_filters_response():
+    """
+    Формирование ответа с фильтрами для страницы истории
+    Возвращает 5 фильтров: tasks, models, domains, creators, sources
+    """
+    try:
+        label_placement = 'top'
+        
+        tasks_items = _get_tasks_items(only_active=False, only_with_history=True)
+        models_items = _get_models_items(only_active=False, only_with_history=True)
+        domains_items = _get_domains_items(only_active=False, only_with_history=True)
+        creators_items = _get_creators_items()
+        sources_items = _get_sources_items()
+        
+        return {
+            "success": True,
+            "data": {
+                "tasks": {
+                    "items": tasks_items,
+                    "label": "Ассистенты",
+                    "labelPlacement": label_placement
+                },
+                "models": {
+                    "items": models_items,
+                    "label": "Модель LLM",
+                    "labelPlacement": label_placement
+                },
+                "domains": {
+                    "items": domains_items,
+                    "label": "Домен",
+                    "labelPlacement": label_placement
+                },
+                "creators": {
+                    "items": creators_items,
+                    "label": "Создатель",
+                    "labelPlacement": label_placement
+                },
+                "sources": {
+                    "items": sources_items,
+                    "label": "Источник",
+                    "labelPlacement": label_placement
+                }
+            },
+            "error": None
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "data": None,
+            "error": f"Ошибка при получении фильтров: {str(e)}"
+        }
 
 
 def get_form_config(task_id: str, domain_id: str):
@@ -289,16 +380,26 @@ def _get_select_items(type_select: str, domain_id: str):
     return items
 
 
-def get_history(count: int = 10, offset: int = 0, task_id: str = None, model_id: str = None, domain_id: str = None):
+def get_history(
+    count: int = 10, 
+    offset: int = 0, 
+    task_id: str = None, 
+    model_id: str = None, 
+    domain_id: str = None,
+    creator_id: str = None,
+    source_id: str = None
+):
     """
     Получение истории генераций
     
     Args:
         count: количество записей
         offset: смещение для пагинации
-        task_id: ID ассистента (опционально)
-        model_id: ID модели (опционально)
-        domain_id: ID домена (опционально, 'main' или ID Satellite)
+        task_id: ID ассистента (опционально, '_all' = все)
+        model_id: ID модели (опционально, '_all' = все)
+        domain_id: ID домена (опционально, 'main', ID Satellite или '_all')
+        creator_id: логин создателя (опционально, '_all' = все)
+        source_id: источник 'manual'/'excel' (опционально, '_all' = все)
     
     Returns:
         dict: {"success": bool, "data": list, "count": int, "error": str}
@@ -337,6 +438,16 @@ def get_history(count: int = 10, offset: int = 0, task_id: str = None, model_id:
                     queryset = queryset.filter(domen=satellite.domen)
                 except Satellite.DoesNotExist:
                     pass
+        
+        # Фильтрация по creator (user login)
+        # "_all" означает "все записи" - не применяем фильтр
+        if creator_id and creator_id != '_all':
+            queryset = queryset.filter(user=creator_id)
+        
+        # Фильтрация по source
+        # "_all" означает "все записи" - не применяем фильтр
+        if source_id and source_id != '_all':
+            queryset = queryset.filter(source=source_id)
         
         # Общее количество записей (до пагинации)
         total_count = queryset.count()
