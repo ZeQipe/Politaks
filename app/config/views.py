@@ -43,13 +43,11 @@ def history_filters(request):
     result = get_filters_for_history(user=request.user)
     
     if result['success']:
-        return JsonResponse({
-            'status': 'success',
-            'data': result['data']
-        }, status=200)
+        # Возвращаем объект с фильтрами напрямую (фронт ожидает такой формат)
+        return JsonResponse(result['data'], status=200)
     else:
         return JsonResponse({
-            'status': 'error',
+            'success': False,
             'error': result['error']
         }, status=500)
 
