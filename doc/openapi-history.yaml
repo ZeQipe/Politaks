@@ -1,0 +1,191 @@
+openapi: 3.0.0
+info:
+  title: History API
+  version: 1.0.0
+  description: API для получения истории генераций
+
+paths:
+  /history/filters:
+    get:
+      summary: Получение фильтров для страницы истории
+      tags:
+        - History
+      responses:
+        '200':
+          description: Успешный ответ с фильтрами
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      tasks:
+                        $ref: '#/components/schemas/FilterConfig'
+                      models:
+                        $ref: '#/components/schemas/FilterConfig'
+                      domains:
+                        $ref: '#/components/schemas/FilterConfig'
+                      creators:
+                        $ref: '#/components/schemas/FilterConfig'
+                      sources:
+                        $ref: '#/components/schemas/FilterConfig'
+                    required:
+                      - tasks
+                      - models
+                      - domains
+                      - creators
+                      - sources
+
+  /history:
+    get:
+      summary: Получение истории генераций
+      tags:
+        - History
+      parameters:
+        - name: taskId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: task_1
+        - name: modelId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: model_1
+        - name: domainId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: domain_1
+        - name: creatorId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: user_1
+        - name: sourceId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: source_1
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          example: 10
+      responses:
+        '200':
+          description: Успешный ответ с историей генераций
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HistoryRow'
+                  count:
+                    type: integer
+                    description: Общее количество записей
+                    example: 42
+
+components:
+  schemas:
+    FilterItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: task_1
+        label:
+          type: string
+          example: Задача 1
+        value:
+          type: string
+          example: task_1
+        default:
+          type: boolean
+          example: false
+      required:
+        - id
+        - label
+        - value
+
+    FilterConfig:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterItem'
+        label:
+          type: string
+          example: Задача
+        labelPlacement:
+          type: string
+          enum: [top, left]
+          example: left
+      required:
+        - items
+        - label
+
+    HistoryRow:
+      type: object
+      properties:
+        id:
+          type: string
+          example: hist_123
+        date:
+          type: string
+          description: Дата в формате строки (для отображения)
+          example: 2024-01-15 14:30
+        task:
+          type: string
+          example: Генерация текста
+        domain:
+          type: string
+          example: Маркетинг
+        model:
+          type: string
+          example: GPT-4
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+                example: Промпт
+              content:
+                type: string
+                example: Напиши статью про AI
+            required:
+              - label
+              - content
+        result:
+          type: string
+          example: Успешно сгенерировано
+      required:
+        - id
+        - date
+        - task
+        - domain
+        - model
+        - details
+        - result
+

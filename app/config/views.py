@@ -35,14 +35,21 @@ def history_filters(request):
     Фильтры для страницы истории
     
     Авторизация: требуется (по сессии)
+    
+    Возвращает фильтры: tasks, models, domains, creators, sources
+    - Админ видит всех создателей и все записи
+    - Обычный пользователь видит только свои записи и себя в creators
     """
-    result = get_filters_for_history()
+    result = get_filters_for_history(user=request.user)
     
     if result['success']:
-        return JsonResponse(result['data'], status=200)
+        return JsonResponse({
+            'status': 'success',
+            'data': result['data']
+        }, status=200)
     else:
         return JsonResponse({
-            'success': False,
+            'status': 'error',
             'error': result['error']
         }, status=500)
 
@@ -51,10 +58,21 @@ def history_filters(request):
 @login_required_api
 def history(request):
     """
-    GET /api/history?count=10&offset=0&taskId=...&modelId=...&domainId=...
+    GET /api/history?count=10&offset=0&taskId=...&modelId=...&domainId=...&creatorId=...&sourceId=...
     Получение истории генераций
     
     Авторизация: требуется (по сессии)
+    
+    Параметры фильтрации:
+    - taskId: ID ассистента или '_all'
+    - modelId: ID модели или '_all'
+    - domainId: 'main', ID сателлита или '_all'
+    - creatorId: логин пользователя или '_all' (только для админов)
+    - sourceId: 'manual', 'excel' или '_all'
+    
+    Ограничение доступа:
+    - Админ может видеть все записи и фильтровать по creatorId
+    - Обычный пользователь видит только свои записи (creatorId игнорируется)
     """
     # Получаем параметры
     count = request.GET.get('count', '10')
@@ -62,6 +80,8 @@ def history(request):
     task_id = request.GET.get('taskId')
     model_id = request.GET.get('modelId')
     domain_id = request.GET.get('domainId')
+    creator_id = request.GET.get('creatorId')
+    source_id = request.GET.get('sourceId')
     
     # Преобразуем count и offset в int
     try:
@@ -75,11 +95,14 @@ def history(request):
         }, status=400)
     
     result = get_history(
+        user=request.user,
         count=count,
         offset=offset,
         task_id=task_id,
         model_id=model_id,
-        domain_id=domain_id
+        domain_id=domain_id,
+        creator_id=creator_id,
+        source_id=source_id
     )
     
     if result['success']:
