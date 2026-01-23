@@ -158,7 +158,7 @@ class OpenAIAgent:
 
         await self.log_to_file("get_reviews_log", response)
 
-        return json.loads(response.output_text)
+        return json.loads(response.output_text).get("reviews", [])
 
 
     async def get_work_results(self, llm_model: str, domain: str,

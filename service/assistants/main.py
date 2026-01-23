@@ -54,7 +54,7 @@ async def change_subdescription_endpoint(request: SubDescriptionRequest):
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route1} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route1} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route1}" in e.detail:
             logger.error(e.detail)
@@ -100,7 +100,7 @@ async def change_description_endpoint(request: DescriptionRequest):
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route2} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route2} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route2}" in e.detail:
             logger.error(e.detail)
@@ -142,7 +142,7 @@ async def change_usage_endpoint(request: UsageRequest):
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route3} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route3} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route3}" in e.detail:
             logger.error(e.detail)
@@ -184,7 +184,7 @@ async def change_features_endpoint(request: FeaturesRequest):
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route4} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route4} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route4}" in e.detail:
             logger.error(e.detail)
@@ -230,7 +230,7 @@ async def create_previews_endpoint(request: PreviewsRequest):
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route5} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route5} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route5}" in e.detail:
             logger.error(e.detail)
@@ -256,7 +256,7 @@ async def create_reviews_endpoint(request: ReviewsRequest):
         )
 
         return ReviewsResponse(
-            **reviews,
+            reviews=reviews,
         )
     except openai.BadRequestError as e:
         raise HTTPException(status_code=e.status_code, detail=f"Error - {route6} - {e.message}") from None
@@ -275,7 +275,7 @@ async def create_reviews_endpoint(request: ReviewsRequest):
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route6} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route6} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route6}" in e.detail:
             logger.error(e.detail)
@@ -383,7 +383,7 @@ async def change_article_endpoint(request: ChArticleRequest):
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route8} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route8} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route8}" in e.detail:
             logger.error(e.detail)
@@ -427,7 +427,7 @@ async def create_article_endpoint(request: ArticleRequest):
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route9} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route9} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route9}" in e.detail:
             logger.error(e.detail)
@@ -471,7 +471,7 @@ async def change_tech_instruction_endpoint(request: TechInstructionRequest):
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route10} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route10} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route10}" in e.detail:
             logger.error(e.detail)
@@ -515,7 +515,7 @@ async def change_category_description_endpoint(request: CategoryDescriptionReque
     except openai.APITimeoutError as e:
         raise HTTPException(status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=f"Error - {route11} - {e.message}") from None
     except openai.APIConnectionError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route7} - {e.message}") from None
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Error - {route11} - {e.message}") from None
     except HTTPException as e:
         if f"Error - {route11}" in e.detail:
             logger.error(e.detail)

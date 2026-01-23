@@ -64,6 +64,8 @@ async def process_google_sheet(user_id: str, llm_model: str, link: str, assistan
         try:
             args = list(record.values())[:-1]
             result = await assistant_func[assistant](llm_model, *args)
+            if assistant in {"reviews"}:
+                result = json.dumps(result, ensure_ascii=False)
             worksheet.update_cell(idx, result_col_index, result)
             await _save_process_data(record, user_id, llm_model, assistant, result, idx)
         except Exception as e:
