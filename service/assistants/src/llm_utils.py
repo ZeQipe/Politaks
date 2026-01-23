@@ -24,6 +24,8 @@ class OpenAIAgent:
     ):
         """Функция для отправки запроса в OpenAI API."""
         try:
+            logger.debug("")
+            logger.debug("-"*100)
             logger.debug(f"get_llm_answer() PROMPT = {prompt}")
             if text_format:
                 response = await self.client.responses.parse(
@@ -277,7 +279,7 @@ class OpenAIAgent:
 
 
     async def log_to_file(self, file_name: str, response) -> None:
-        header = f"[{time.strftime('%Y-%m-%d %H:%M:%S')} LOG]"
+        header = f"[{time.strftime("%Y-%m-%d %H:%M:%S")} LOG]"
         buffer = (str(res) for res in response)
         with open(LOGS_DIR / f"{file_name}.log", "a", encoding="utf-8") as f:
-            f.write(f"{header}\n{'\n'.join(buffer)}\n\n")
+            f.write(f"{header}\n{"\n".join(buffer)}\n\n")
