@@ -24,7 +24,7 @@ class OpenAIAgent:
     ):
         """Функция для отправки запроса в OpenAI API."""
         try:
-            logger.info(f"get_llm_answer() PROMPT = {prompt}")
+            logger.debug(f"get_llm_answer() PROMPT = {prompt}")
             if text_format:
                 response = await self.client.responses.parse(
                     input=prompt,

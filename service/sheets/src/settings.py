@@ -28,7 +28,7 @@ logging.basicConfig(
     ],
     force=True,
 )
-logger = logging.getLogger()
+logger1 = logging.getLogger()
 
 logging.getLogger("asyncio").setLevel(logging.INFO)
 logging.getLogger("urllib3").setLevel(logging.INFO)
@@ -39,6 +39,6 @@ if get_env:
     try:
         GOOGLE_SH_CREDS: dict = json.loads(get_env)
     except json.JSONDecodeError:
-        logger.exception("Invalid GOOGLE_SH_CREDS format.")
+        logger1.exception("Invalid GOOGLE_SH_CREDS format.")
     except Exception as e:
-        logger.exception(f"Error initializing GOOGLE_SH_CREDS: {e}")
+        logger1.exception(f"Error initializing GOOGLE_SH_CREDS: {e}")
