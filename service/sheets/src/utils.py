@@ -20,7 +20,7 @@ assistant_func = {
     "reviews": agent.get_reviews,
     "work_results": agent.get_work_results,
     "change_article": agent.change_article,
-    "articele": agent.get_article,
+    "article": agent.get_article,
     "tech_instruction": agent.change_tech_instruction,
     "category_description": agent.change_category_description,
 }
@@ -46,7 +46,7 @@ async def _save_process_data(record: dict, user_id: str, llm_model: str, assista
     async with aiohttp.ClientSession() as session, session.post(f"{DJANGO_API_URL}/api/response/save", json=payload) as resp:
         if resp.status not in {200, 201}:
             error_text = await resp.text()
-            logger1.error(f"_save_process_data() - Failed for '{assistant}' row={idx}: {resp.status} - {error_text}")
+            logger1.error(f"_save_process_data() - Failed for '{assistant}' row={idx} - status: {resp.status} - {error_text}")
 
 
 async def process_google_sheet(user_id: str, llm_model: str, link: str, assistant: str, sheet_id: int, from_row: int, to_row: int):

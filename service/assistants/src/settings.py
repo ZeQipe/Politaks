@@ -27,7 +27,7 @@ logging.basicConfig(
     ],
     force=True,
 )
-logger = logging.getLogger()
+logger = logging.getLogger("assistants_api")
 
 
 logging.getLogger("asyncio").setLevel(logging.INFO)

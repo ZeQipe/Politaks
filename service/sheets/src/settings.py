@@ -28,7 +28,7 @@ logging.basicConfig(
     ],
     force=True,
 )
-logger1 = logging.getLogger()
+logger1 = logging.getLogger("sheets_api")
 
 logging.getLogger("asyncio").setLevel(logging.INFO)
 logging.getLogger("urllib3").setLevel(logging.INFO)

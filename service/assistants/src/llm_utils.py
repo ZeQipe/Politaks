@@ -94,7 +94,7 @@ class OpenAIAgent:
 
 
     async def negative_prompt(self, llm_model: str, result: str) -> str:
-        prompt = f"**Полученный результат:**\n{result}"
+        prompt = f"**Ранее полученный результат:**\n{result}"
         response = await self.get_llm_answer(negative_instruction, prompt, model=llm_model)
 
         await self.log_to_file("negative_prompt_log", response)
