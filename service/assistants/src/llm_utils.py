@@ -1,10 +1,12 @@
 
+import asyncio
 import base64
 import json
+import random
 import time
 
 import httpx
-from openai import AsyncOpenAI
+from openai import APIConnectionError, APITimeoutError, AsyncOpenAI, RateLimitError
 
 from .llm_instructions import *
 from .models import ReviewsResponse
@@ -23,33 +25,51 @@ class OpenAIAgent:
         model: str="gpt-4.1", temperature: float|None = None,
     ):
         """Функция для отправки запроса в OpenAI API."""
-        try:
-            logger.debug("")
-            logger.debug("-"*100)
-            logger.debug(f"get_llm_answer() PROMPT = {prompt}")
-            if text_format:
-                response = await self.client.responses.parse(
-                    input=prompt,
-                    model=model,
-                    text_format=text_format,
-                    instructions=instruction,
-                    store=False,
-                    temperature=temperature,
-                )
+        attempt = 0
+        max_attempts = 5
+        last_error = None
+        while attempt < max_attempts:
+            try:
+                logger.debug("")
+                logger.debug("-"*100)
+                if text_format:
+                    response = await self.client.responses.parse(
+                        input=prompt,
+                        model=model,
+                        text_format=text_format,
+                        instructions=instruction,
+                        store=False,
+                        temperature=temperature,
+                    )
+                else:
+                    response = await self.client.responses.create(
+                        input=prompt,
+                        model=model,
+                        instructions=instruction,
+                        store=False,
+                        temperature=temperature,
+                    )
+            except RateLimitError as e:
+                err_code = getattr(e, "code", None)
+                is_insufficient_quota = err_code == "insufficient_quota"
+                if is_insufficient_quota:
+                    logger.error(f"Insufficient quota in get_llm_answer() - {e}")
+                    raise
+                attempt += 1
+                last_error = e
+                logger.warning(f"RateLimitError get_llm_answer() (attempt {attempt}/{max_attempts}) - {e}")
+                await asyncio.sleep(7 * attempt + random.uniform(0, 0.5))
+            except (APIConnectionError, APITimeoutError) as e:
+                attempt += 1
+                last_error = e
+                logger.warning(f"ConnTimeError get_llm_answer() (attempt {attempt}/{max_attempts}) - {e}")
+                await asyncio.sleep(5 * attempt + random.uniform(0, 0.5))
+            except Exception as e:
+                logger.error(f"Exception get_llm_answer() - {e}")
+                raise
             else:
-                response = await self.client.responses.create(
-                    input=prompt,
-                    model=model,
-                    instructions=instruction,
-                    store=False,
-                    temperature=temperature,
-                )
-
-        except Exception as e:
-            logger.error(f"Exception get_llm_answer() - {e}")
-            raise
-        else:
-            return response
+                return response
+        raise RuntimeError("All requests to OpenAI failed after retries") from last_error
 
 
     async def get_sub_description(self, llm_model: str, domain: str, product_name: str, description: str, usage: str,
