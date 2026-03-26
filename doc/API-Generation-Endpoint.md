@@ -116,21 +116,23 @@ type TGenerationResult = {
 ```typescript
 type TGenerationExcelRequest = {
   filters: {
-    taskId: string;
-    modelId: string;
+    taskId: string;  // конкретный id ассистента или "_all"
+    modelId: string; // только конкретный id модели, "_all" недопустим
   };
   excelLink: string;
   range: {
-    from: number;
-    to: number;
+    from: number; // >= 3
+    to: number;   // 0 = весь документ, или >= 3
   };
 };
 ```
 
 **Примечания:**
 - Используется для генерации контента из Excel файла
-- Поле `excelLink` содержит ссылку на Excel файл
-- Поля `range.from` и `range.to` указывают диапазон строк для обработки (0 означает отсутствие ограничения)
+- `taskId: "_all"` — запуск фоновой обработки для всех ассистентов с поддержкой Excel (все записи `Assistant` с `key_title` из `ASSISTANT_METHODS`). Для каждого ассистента стартует свой поток с индивидуальным `sheet_id`.
+- `modelId` должен быть конкретным id модели; значение `"_all"` возвращает ошибку 400.
+- Поле `excelLink` содержит ссылку на Google Sheets / Excel файл
+- `range.from` >= 3, `range.to` = 0 (весь документ) или >= 3
 - Фильтр `domainId` не требуется для Excel генерации
 
 **Возвращает:** `TGenerationResponse`

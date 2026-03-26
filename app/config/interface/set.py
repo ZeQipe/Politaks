@@ -359,37 +359,76 @@ def _strip_html(html: str) -> str:
     return text
 
 
-def generate_excel_content(task_id: str, model_id: str, excel_link: str, user_id: int = None, range_from: int = 0, range_to: int = 0):
+def _spawn_sheet_processing(assistant, model, excel_link, user_id, range_from, range_to):
     """
-    Генерация контента из Excel файла
-    
-    Args:
-        task_id: ID ассистента (строка)
-        model_id: ID модели (строка)
-        excel_link: ссылка на Excel/Google Sheets файл
-        user_id: ID пользователя
-        range_from: начальная строка (0 = не указано)
-        range_to: конечная строка (0 = весь документ)
-    
-    Returns:
-        dict: {"success": bool, "data": dict, "error": str}
+    Запускает фоновую обработку Google Sheet для одного ассистента.
+    Возвращает key_title запущенного ассистента.
     """
     import threading
     from interface import SheetsAPI
     from app.users.models import UserAssistant
-    
-    try:
-        # Валидация ассистента по ID
+
+    sheet_id = assistant.default_sheets_id or 0
+
+    if user_id:
         try:
-            assistant = Assistant.objects.get(id=task_id)
-        except Assistant.DoesNotExist:
-            return {
-                "success": False,
-                "data": None,
-                "error": f"Ассистент с ID '{task_id}' не найден"
-            }
-        
-        # Валидация модели
+            user_assistant = UserAssistant.objects.get(
+                user_id=user_id,
+                assistant_id=assistant.id
+            )
+            if user_assistant.sheets_id is not None:
+                sheet_id = user_assistant.sheets_id
+        except UserAssistant.DoesNotExist:
+            pass
+
+    payload = {
+        "llm_model": model.name,
+        "link": excel_link,
+        "assistant": assistant.key_title,
+        "sheet_id": sheet_id,
+        "user_id": user_id,
+        "from_row": range_from,
+        "to_row": range_to,
+    }
+
+    print(f"=== SHEETS PAYLOAD для {assistant.key_title} ===")
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    print("=" * 50)
+
+    def run_sheets_processing():
+        api = SheetsAPI()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(api.process_sheet(**payload))
+            print(f"=== SHEETS PROCESSING COMPLETED для {assistant.key_title} ===")
+        except Exception as e:
+            print(f"=== SHEETS PROCESSING ERROR для {assistant.key_title}: {e} ===")
+        finally:
+            loop.close()
+
+    thread = threading.Thread(target=run_sheets_processing, daemon=True)
+    thread.start()
+    return assistant.key_title
+
+
+def generate_excel_content(task_id: str, model_id: str, excel_link: str, user_id: int = None, range_from: int = 0, range_to: int = 0):
+    """
+    Генерация контента из Excel файла.
+
+    Args:
+        task_id: ID ассистента или "_all" (все ассистенты из ASSISTANT_METHODS)
+        model_id: ID модели (конкретный, "_all" недопустим)
+        excel_link: ссылка на Excel/Google Sheets файл
+        user_id: ID пользователя
+        range_from: начальная строка (>= 3)
+        range_to: конечная строка (-1 = весь документ, или >= 3)
+
+    Returns:
+        dict: {"success": bool, "data": dict, "error": str}
+    """
+    try:
+        # Валидация модели (общая для обеих веток)
         try:
             model = Models.objects.get(id=model_id)
         except Models.DoesNotExist:
@@ -398,65 +437,56 @@ def generate_excel_content(task_id: str, model_id: str, excel_link: str, user_id
                 "data": None,
                 "error": f"Модель с ID '{model_id}' не найдена"
             }
-        
-        # Проверяем, есть ли ассистент в маппинге
+
+        if task_id == '_all':
+            assistants = Assistant.objects.filter(
+                key_title__in=list(ASSISTANT_METHODS.keys())
+            ).order_by('id')
+
+            if not assistants.exists():
+                return {
+                    "success": False,
+                    "data": None,
+                    "error": "Нет ассистентов с поддержкой Excel-обработки"
+                }
+
+            launched = []
+            for assistant in assistants:
+                key = _spawn_sheet_processing(
+                    assistant, model, excel_link, user_id, range_from, range_to
+                )
+                launched.append(key)
+
+            return {
+                "success": True,
+                "data": {
+                    "html": f"Обработка запущена для {len(launched)} ассистентов",
+                    "text": f"Обработка запущена для {len(launched)} ассистентов"
+                },
+                "error": None
+            }
+
+        # Одиночный ассистент по id
+        try:
+            assistant = Assistant.objects.get(id=task_id)
+        except Assistant.DoesNotExist:
+            return {
+                "success": False,
+                "data": None,
+                "error": f"Ассистент с ID '{task_id}' не найден"
+            }
+
         if assistant.key_title not in ASSISTANT_METHODS:
             return {
                 "success": False,
                 "data": None,
                 "error": f"Неизвестный тип ассистента: '{assistant.key_title}'"
             }
-        
-        # Определяем sheet_id: кастомный от пользователя или дефолтный от ассистента
-        sheet_id = assistant.default_sheets_id or 0
-        
-        if user_id:
-            # Проверяем есть ли у пользователя кастомный sheets_id для этого ассистента
-            try:
-                user_assistant = UserAssistant.objects.get(
-                    user_id=user_id,
-                    assistant_id=assistant.id
-                )
-                # Если у пользователя есть кастомный sheets_id - используем его
-                if user_assistant.sheets_id is not None:
-                    sheet_id = user_assistant.sheets_id
-            except UserAssistant.DoesNotExist:
-                # Связи нет - используем дефолтный
-                pass
-        
-        # Формируем payload для Sheets API
-        # range_from >= 3, range_to = -1 (весь документ) или >= 3
-        payload = {
-            "llm_model": model.name,
-            "link": excel_link,
-            "assistant": assistant.key_title,
-            "sheet_id": sheet_id,
-            "user_id": user_id,
-            "from_row": range_from,
-            "to_row": range_to,
-        }
-        
-        print(f"=== SHEETS PAYLOAD для {assistant.key_title} ===")
-        print(json.dumps(payload, indent=2, ensure_ascii=False))
-        print("=" * 50)
-        
-        # Функция для запуска в отдельном потоке
-        def run_sheets_processing():
-            api = SheetsAPI()
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                loop.run_until_complete(api.process_sheet(**payload))
-                print(f"=== SHEETS PROCESSING COMPLETED для {assistant.key_title} ===")
-            except Exception as e:
-                print(f"=== SHEETS PROCESSING ERROR для {assistant.key_title}: {e} ===")
-            finally:
-                loop.close()
-        
-        # Запускаем обработку в отдельном потоке (не ждём завершения)
-        thread = threading.Thread(target=run_sheets_processing, daemon=True)
-        thread.start()
-        
+
+        _spawn_sheet_processing(
+            assistant, model, excel_link, user_id, range_from, range_to
+        )
+
         return {
             "success": True,
             "data": {
@@ -465,7 +495,7 @@ def generate_excel_content(task_id: str, model_id: str, excel_link: str, user_id
             },
             "error": None
         }
-        
+
     except Exception as e:
         return {
             "success": False,

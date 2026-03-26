@@ -3,6 +3,7 @@
 Возвращают данные в едином формате
 """
 import json
+from django.utils import timezone
 from ..models import Models, Assistant, AssistantInputer
 from app.product.models import Satellite, Products
 from app.response.models import Response
@@ -495,7 +496,7 @@ def get_history(
             
             data.append({
                 "id": str(response.id),
-                "date": response.createAt.strftime("%d.%m.%Y %H:%M"), 
+                "date": timezone.localtime(response.createAt).strftime("%d.%m.%Y %H:%M"),
                 "task": response.assistant,
                 "domain": domain_display,
                 "model": response.model,

@@ -226,10 +226,13 @@ def generate_excel(request):
     
     Принимает JSON:
     {
-        "filters": {"taskId": "...", "modelId": "..."},
+        "filters": {"taskId": "<id>" | "_all", "modelId": "<id>"},
         "excelLink": "https://...",
-        "range": {"from": 0, "to": 0}
+        "range": {"from": 3, "to": 0}
     }
+    
+    taskId: конкретный id ассистента или "_all" (все ассистенты с поддержкой Excel).
+    modelId: только конкретный id модели, "_all" недопустим.
     """
     try:
         data = json.loads(request.body)
@@ -278,11 +281,10 @@ def generate_excel(request):
         range_to = -1
     
     # Валидация обязательных параметров
-    # "_all" означает "все" - для генерации это недопустимо, нужен конкретный выбор
-    if not task_id or task_id == '_all':
+    if not task_id:
         return JsonResponse({
             'success': False,
-            'error': 'Параметр filters.taskId обязателен'
+            'error': 'Параметр filters.taskId обязателен (конкретный id или "_all")'
         }, status=400)
     
     if not model_id or model_id == '_all':
