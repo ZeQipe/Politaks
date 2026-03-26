@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from service.sheets.src.models import ProcessGoogleSheetRequest, ProcessGoogleSheetsRequest, ProcessResponse
-from service.sheets.src.settings import logger
+from service.sheets.src.settings import logger1
 from service.sheets.src.utils import process_google_sheet, process_google_sheets
 
 app = FastAPI(
@@ -55,12 +55,12 @@ async def process_google_sheet_endpoint(request: ProcessGoogleSheetRequest):
         ) from None
     except HTTPException as e:
         if f"Error - {rout1}" in e.detail:
-            logger.error(e.detail)
+            logger1.error(e.detail)
         else:
-            logger.error(f"Error - {rout1} - {e.detail}")
+            logger1.error(f"Error - {rout1} - {e.detail}")
         raise
     except Exception as e:
-        logger.exception(f"Exception {rout1} - {e}")
+        logger1.exception(f"Exception {rout1} - {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Exception {rout1} - {e}") from e
     else:
         return ProcessResponse(status_code=status.HTTP_200_OK, detail="success")
@@ -98,12 +98,12 @@ async def process_google_sheets_endpoint(request: ProcessGoogleSheetsRequest):
         ) from None
     except HTTPException as e:
         if f"Error - {rout2}" in e.detail:
-            logger.error(e.detail)
+            logger1.error(e.detail)
         else:
-            logger.error(f"Error - {rout2} - {e.detail}")
+            logger1.error(f"Error - {rout2} - {e.detail}")
         raise
     except Exception as e:
-        logger.exception(f"Exception {rout2} - {e}")
+        logger1.exception(f"Exception {rout2} - {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Exception {rout2} - {e}") from e
     else:
         return ProcessResponse(status_code=status.HTTP_200_OK, detail="success")

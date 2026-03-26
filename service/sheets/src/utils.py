@@ -7,7 +7,7 @@ import gspread
 
 from service.assistants.src.llm_utils import OpenAIAgent
 
-from .settings import DJANGO_API_URL, GOOGLE_SH_CREDS, logger
+from .settings import DJANGO_API_URL, GOOGLE_SH_CREDS, logger1
 
 gc = gspread.service_account_from_dict(GOOGLE_SH_CREDS)
 agent = OpenAIAgent()
@@ -20,7 +20,7 @@ assistant_func = {
     "reviews": agent.get_reviews,
     "work_results": agent.get_work_results,
     "change_article": agent.change_article,
-    "articele": agent.get_article,
+    "article": agent.get_article,
     "tech_instruction": agent.change_tech_instruction,
     "category_description": agent.change_category_description,
 }
@@ -46,7 +46,7 @@ async def _save_process_data(record: dict, user_id: str, llm_model: str, assista
     async with aiohttp.ClientSession() as session, session.post(f"{DJANGO_API_URL}/api/response/save", json=payload) as resp:
         if resp.status not in {200, 201}:
             error_text = await resp.text()
-            logger.error(f"_save_process_data() - Failed for '{assistant}' row={idx}: {resp.status} - {error_text}")
+            logger1.error(f"_save_process_data() - Failed for '{assistant}' row={idx} - status: {resp.status} - {error_text}")
 
 
 async def process_google_sheet(user_id: str, llm_model: str, link: str, assistant: str, sheet_id: int, from_row: int, to_row: int):
@@ -64,10 +64,12 @@ async def process_google_sheet(user_id: str, llm_model: str, link: str, assistan
         try:
             args = list(record.values())[:-1]
             result = await assistant_func[assistant](llm_model, *args)
+            if assistant in {"reviews"}:
+                result = json.dumps(result, ensure_ascii=False)
             worksheet.update_cell(idx, result_col_index, result)
             await _save_process_data(record, user_id, llm_model, assistant, result, idx)
         except Exception as e:
-            logger.error(f"Error process_google_sheet().handle_row() - {assistant} - row {idx} - {e}")
+            logger1.error(f"Error process_google_sheet().handle_row() - {assistant} - row {idx} - {e}")
 
     tasks_data = [
         (i, record) for i, record in enumerate(wsh_records, from_row+2)

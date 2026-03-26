@@ -27,11 +27,11 @@ async def get_related_products(domain: str, products_name: list[str]) -> dict:
             data = response.json()
             return data.get("product_name", {})
         else:
-            logger.warning(f"get_related_products() failed: {response.status_code} - {response.text}")
+            logger.warning(f"Failed get_related_products() - {response.status_code} - {response.text}")
             return {}
 
     except Exception as e:
-        logger.error(f"get_related_products() error: {e}")
+        logger.error(f"Exception get_related_products() - {e}")
         return {}
 
 
@@ -57,9 +57,9 @@ async def get_products_links(domain: str, products_name: list[str]):
             data = response.json()
             return data.get("data", {})
         else:
-            logger.warning(f"get_product_link() failed: {response.status_code} - {response.text}")
+            logger.warning(f"Failed get_products_links() - status: {response.status_code} - {response.text}")
             return {}
 
     except Exception as e:
-        logger.error(f"get_product_link() error: {e}")
+        logger.error(f"Exception get_products_links() - {e}")
         return {}

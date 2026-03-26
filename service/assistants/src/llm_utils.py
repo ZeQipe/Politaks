@@ -1,10 +1,12 @@
 
+import asyncio
 import base64
 import json
+import random
 import time
 
 import httpx
-from openai import AsyncOpenAI
+from openai import APIConnectionError, APITimeoutError, AsyncOpenAI, RateLimitError
 
 from .llm_instructions import *
 from .models import ReviewsResponse
@@ -23,31 +25,51 @@ class OpenAIAgent:
         model: str="gpt-4.1", temperature: float|None = None,
     ):
         """Функция для отправки запроса в OpenAI API."""
-        try:
-            logger.info(f"get_llm_answer() PROMPT = {prompt}")
-            if text_format:
-                response = await self.client.responses.parse(
-                    input=prompt,
-                    model=model,
-                    text_format=text_format,
-                    instructions=instruction,
-                    store=False,
-                    temperature=temperature,
-                )
+        attempt = 0
+        max_attempts = 5
+        last_error = None
+        while attempt < max_attempts:
+            try:
+                logger.debug("")
+                logger.debug("-"*100)
+                if text_format:
+                    response = await self.client.responses.parse(
+                        input=prompt,
+                        model=model,
+                        text_format=text_format,
+                        instructions=instruction,
+                        store=False,
+                        temperature=temperature,
+                    )
+                else:
+                    response = await self.client.responses.create(
+                        input=prompt,
+                        model=model,
+                        instructions=instruction,
+                        store=False,
+                        temperature=temperature,
+                    )
+            except RateLimitError as e:
+                err_code = getattr(e, "code", None)
+                is_insufficient_quota = err_code == "insufficient_quota"
+                if is_insufficient_quota:
+                    logger.error(f"Insufficient quota in get_llm_answer() - {e}")
+                    raise
+                attempt += 1
+                last_error = e
+                logger.warning(f"RateLimitError get_llm_answer() (attempt {attempt}/{max_attempts}) - {e}")
+                await asyncio.sleep(7 * attempt + random.uniform(0, 0.5))
+            except (APIConnectionError, APITimeoutError) as e:
+                attempt += 1
+                last_error = e
+                logger.warning(f"ConnTimeError get_llm_answer() (attempt {attempt}/{max_attempts}) - {e}")
+                await asyncio.sleep(5 * attempt + random.uniform(0, 0.5))
+            except Exception as e:
+                logger.error(f"Exception get_llm_answer() - {e}")
+                raise
             else:
-                response = await self.client.responses.create(
-                    input=prompt,
-                    model=model,
-                    instructions=instruction,
-                    store=False,
-                    temperature=temperature,
-                )
-
-        except Exception as e:
-            logger.error(f"Exception get_llm_answer() - {e}")
-            raise
-        else:
-            return response
+                return response
+        raise RuntimeError("All requests to OpenAI failed after retries") from last_error
 
 
     async def get_sub_description(self, llm_model: str, domain: str, product_name: str, description: str, usage: str,
@@ -92,7 +114,7 @@ class OpenAIAgent:
 
 
     async def negative_prompt(self, llm_model: str, result: str) -> str:
-        prompt = f"**Полученный результат:**\n{result}"
+        prompt = f"**Ранее полученный результат:**\n{result}"
         response = await self.get_llm_answer(negative_instruction, prompt, model=llm_model)
 
         await self.log_to_file("negative_prompt_log", response)
@@ -158,7 +180,7 @@ class OpenAIAgent:
 
         await self.log_to_file("get_reviews_log", response)
 
-        return json.loads(response.output_text)
+        return json.loads(response.output_text).get("reviews", [])
 
 
     async def get_work_results(self, llm_model: str, domain: str,
@@ -277,7 +299,7 @@ class OpenAIAgent:
 
 
     async def log_to_file(self, file_name: str, response) -> None:
-        header = f"[{time.strftime('%Y-%m-%d %H:%M:%S')} LOG]"
+        header = f"[{time.strftime("%Y-%m-%d %H:%M:%S")} LOG]"
         buffer = (str(res) for res in response)
         with open(LOGS_DIR / f"{file_name}.log", "a", encoding="utf-8") as f:
-            f.write(f"{header}\n{'\n'.join(buffer)}\n\n")
+            f.write(f"{header}\n{"\n".join(buffer)}\n\n")
