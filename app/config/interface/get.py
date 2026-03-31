@@ -455,8 +455,8 @@ def get_history(
         # Общее количество записей (до пагинации)
         total_count = queryset.count()
         
-        # Применяем пагинацию
-        queryset = queryset[offset:offset + count]
+        # TODO: временная заглушка — игнорируем count, возвращаем всё
+        # queryset = queryset[offset:offset + count]
         
         # Кэш для Inputer labels
         inputer_labels = {inp.name: inp.label for inp in Inputer.objects.all()}
