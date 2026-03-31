@@ -83,8 +83,7 @@ def _get_tasks_items(only_active: bool, only_with_history: bool):
     queryset = Assistant.objects.all().order_by('id')
     
     if only_with_history:
-        # Только те, по которым есть записи в Response
-        used_assistants = Response.objects.values_list('assistant', flat=True).distinct()
+        used_assistants = Response.objects.order_by().values_list('assistant', flat=True).distinct()
         queryset = queryset.filter(title__in=used_assistants)
     
     items = []
@@ -107,8 +106,7 @@ def _get_models_items(only_active: bool, only_with_history: bool):
         queryset = queryset.filter(is_active=True)
     
     if only_with_history:
-        # Только те, по которым есть записи в Response
-        used_models = Response.objects.values_list('model', flat=True).distinct()
+        used_models = Response.objects.order_by().values_list('model', flat=True).distinct()
         queryset = queryset.filter(name__in=used_models)
     
     items = []
@@ -138,8 +136,7 @@ def _get_domains_items(only_active: bool, only_with_history: bool):
     queryset = Satellite.objects.all().order_by('id')
     
     if only_with_history:
-        # Только те, по которым есть записи в Response
-        used_domains = Response.objects.values_list('domen', flat=True).distinct()
+        used_domains = Response.objects.order_by().values_list('domen', flat=True).distinct()
         queryset = queryset.filter(domen__in=used_domains)
     
     for satellite in queryset:
@@ -157,7 +154,7 @@ def _get_creators_items():
     """Получение списка создателей из истории"""
     from app.users.models import User
     
-    used_creators = Response.objects.values_list('user', flat=True).distinct()
+    used_creators = Response.objects.order_by().values_list('user', flat=True).distinct()
     users = User.objects.filter(login__in=used_creators).order_by('id')
     
     items = []
@@ -174,7 +171,12 @@ def _get_creators_items():
 
 def _get_sources_items():
     """Получение списка источников из истории"""
-    used_sources = Response.objects.values_list('source', flat=True).distinct()
+    used_sources = (
+        Response.objects
+        .order_by()
+        .values_list('source', flat=True)
+        .distinct()
+    )
     
     source_labels = {
         'manual': 'Ручной ввод',
